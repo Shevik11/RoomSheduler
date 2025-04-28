@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Depends, Query
+from fastapi import FastAPI, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from bd import get_db
 from models import Days
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,33 +21,29 @@ app.add_middleware(
 @app.get('/all_days/')
 def get_all_days(db: Session = Depends(get_db)):
     days = db.query(Days).all()
-
-    # Створюємо список словників вручну
     result_list = []
     for day in days:
         day_dict = day.__dict__.copy()
         if "_sa_instance_state" in day_dict:
             del day_dict["_sa_instance_state"]
         result_list.append(day_dict)
-
     return JSONResponse(content=result_list)
 
 
 @app.get("/days/")
 def get_days(
-        name_group: str = Query(None),
-        number_of_subgroup: int = Query(None),
-        day_of_week: str = Query(None),
-        nominator: str = Query(None),
-        time_of_para: str = Query(None),
-        namb_of_para: int = Query(None),
-        name_of_para: str = Query(None),
-        room: str = Query(None),
-        teacher: str = Query(None),
-        busy: bool = Query(None),
+        name_group: str | None = Query(None),
+        number_of_subgroup: int | None = Query(None),
+        day_of_week: str | None = Query(None),
+        nominator: str | None = Query(None),
+        time_of_para: str | None = Query(None),
+        namb_of_para: int | None = Query(None),
+        name_of_para: str | None = Query(None),
+        room: str | None = Query(default=None),
+        teacher: str | None = Query(None),
+        busy: bool | None = Query(None),
         db: Session = Depends(get_db),
 ):
-    # Будуємо SQL запит вручну
     sql_query = "SELECT * FROM days WHERE 1=1"
     params = {}
 
@@ -81,16 +78,10 @@ def get_days(
         sql_query += " AND busy = :busy"
         params["busy"] = busy
 
-    # Виконуємо запит напряму
     result = db.execute(text(sql_query), params)
-
-    # Отримуємо всі рядки і конвертуємо їх у словники
     rows = result.fetchall()
-
-    # Отримуємо імена колонок
     column_names = result.keys()
 
-    # Створюємо список словників
     result_list = []
     for row in rows:
         row_dict = {}
@@ -98,6 +89,81 @@ def get_days(
             row_dict[column] = row[i]
         result_list.append(row_dict)
 
-    print(f"Загальна кількість рядків: {len(result_list)}")
-
     return JSONResponse(content=result_list)
+
+
+@app.get("/room_schedule/")
+def get_room_schedule(
+    room: str = Query(..., description="Номер аудиторії (наприклад: '1/Б')"),
+    db: Session = Depends(get_db)
+):
+    print(room)
+    try:
+        # Отримуємо всі пари для цієї аудиторії
+        query = text("""
+                    SELECT * 
+                    FROM days
+                    WHERE room = :room
+                """)
+
+        room_schedule = db.execute(query, {"room": room.strip()}).fetchall()
+        print(f"SQL запит знайшов {len(room_schedule)} записів для аудиторії '{room}'")
+        # Дні тижня (без суботи)
+        days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "Пятниця"]
+        paras = range(1, 9)  # Пари з 1 по 8
+
+        # Час пар
+        para_times = {
+            1: '8:30-10:05',
+            2: '10:25-12:00',
+            3: '12:20-13:55',
+            4: '14:15-15:50',
+            5: '16:10-17:45',
+            6: '18:05-19:40',
+            7: '19:50-21:25',
+            8: '21:35-23:10'
+        }
+
+        result = {}
+
+        # Створюємо словник для швидкого пошуку розкладу
+        schedule_dict = {}
+        for item in room_schedule:
+            key = (item.day_of_week, item.namb_of_para)
+            if key not in schedule_dict:
+                schedule_dict[key] = []
+            schedule_dict[key].append(item)
+
+        for day in days:
+            day_schedule = []
+            for para in paras:
+                key = (day, para)
+                scheduled_items = schedule_dict.get(key, [])
+
+                # Якщо є записи для цього дня і пари
+                if scheduled_items:
+                    for scheduled in scheduled_items:
+                        day_schedule.append({
+                            "para": para,
+                            "time": para_times.get(para, ''),
+                            "status": "Зайнято",
+                            "group": scheduled.name_group,
+                            "subject": scheduled.name_of_para,
+                            "teacher": scheduled.teacher
+                        })
+                else:
+                    day_schedule.append({
+                        "para": para,
+                        "time": para_times.get(para, ''),
+                        "status": "Вільно",
+                        "group": None,
+                        "subject": None,
+                        "teacher": None
+                    })
+
+            result[day] = day_schedule
+
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

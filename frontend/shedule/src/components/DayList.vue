@@ -65,7 +65,7 @@
           class="filter-select"
         >
           <option :value="null">Всі пари</option>
-          <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
+          <option v-for="n in 8" :key="n" :value="n">{{ n }}</option>
         </select>
       </div>
 
@@ -124,6 +124,7 @@
           id="busy"
           v-model="filters.busy" 
           class="filter-select"
+          @change="handleBusyChange"
         >
           <option :value="null">Всі</option>
           <option :value="true">Зайняті</option>
@@ -152,27 +153,28 @@
   </div>
   
   <!-- Повідомлення про відсутність даних -->
-  <div v-if="!loading && !error && scheduleData.length === 0" class="no-data">
+  <div v-if="!loading && !error && groupedScheduleData.length === 0" class="no-data">
     <i class="no-data-icon">📭</i>
     <p>Немає даних, що відповідають заданим фільтрам</p>
   </div>
 
   <!-- Відображення розкладу -->
-  <div v-if="!loading && !error && scheduleData.length > 0" class="schedule-container">
-    <h3>Знайдено записів: {{ scheduleData.length }}</h3>
+  <div v-if="!loading && !error && groupedScheduleData.length > 0" class="schedule-container">
+    <h3>Знайдено записів: {{ groupedScheduleData.length }}</h3>
     
     <!-- Групування по дням тижня -->
     <div v-for="day in daysOfWeek" :key="day" class="day-group">
       <h4 v-if="hasDayInSchedule(day)" class="day-title">{{ day }}</h4>
       
-      <div class="schedule">
+      <!-- Звичайний режим відображення -->
+      <div v-if="!showFreeScheduleGrid" class="schedule">
         <div 
           v-for="item in filterByDay(day)" 
-          :key="`${item.id}-${item.name_group}-${item.namb_of_para}`" 
+          :key="`${item.key}`" 
           :class="['schedule-item', {'busy': item.busy}]"
         >
           <div class="item-header">
-            <span class="item-group">{{ item.name_group }}</span>
+            <span class="item-group">{{ item.groups.join(', ') }}</span>
             <span v-if="item.number_of_subgroup" class="item-subgroup">(підгрупа {{ item.number_of_subgroup }})</span>
           </div>
           
@@ -204,22 +206,167 @@
           </div>
         </div>
       </div>
+      
+      <!-- Сітка вільних пар -->
+      <div v-if="showFreeScheduleGrid" class="free-schedule-grid">
+        <div class="grid-header">
+          <div class="grid-cell">Пара</div>
+          <div class="grid-cell">Час</div>
+          <div class="grid-cell">Статус</div>
+        </div>
+        <div 
+          v-for="para in 8" 
+          :key="para" 
+          class="grid-row"
+          :class="{'free-para': isParaFree(day, para)}"
+        >
+          <div class="grid-cell">{{ para }}</div>
+          <div class="grid-cell">{{ getParaTime(para) }}</div>
+          <div class="grid-cell">
+            <span v-if="isParaFree(day, para)" class="status-free">Вільно</span>
+            <span v-else class="status-busy">Зайнято</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Блок для відображення розкладу аудиторії -->
+  <div v-if="roomScheduleData" class="room-schedule">
+    <h3>Розклад аудиторії {{ filters.room }}</h3>
+    
+    <div v-for="(day, dayName) in roomScheduleData" :key="dayName" class="day-schedule">
+      <h4>{{ dayName }}</h4>
+      
+      <div v-for="para in day" :key="para.para" class="para-item" :class="{'free': para.status === 'Вільно'}">
+        <div class="para-header">
+          <span class="para-number">{{ para.para }} пара</span>
+          <span class="para-time">{{ para.time }}</span>
+          <span class="para-status" :class="{'free': para.status === 'Вільно', 'busy': para.status === 'Зайнято'}">
+            {{ para.status }}
+          </span>
+        </div>
+        
+        <div v-if="para.status === 'Зайнято'" class="para-details">
+          <div>Групи: {{ Array.isArray(para.group) ? para.group.join(', ') : para.group }}</div>
+          <div>Предмет: {{ para.subject }}</div>
+          <div v-if="para.teacher">Викладач: {{ para.teacher }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import axios from 'axios'
 
 // Стани
 const loading = ref(true)
 const error = ref(null)
 const scheduleData = ref([])
+const showFreeScheduleGrid = ref(false)
+const roomScheduleData = ref(null)
+
+// Обчислене властивість для згрупованих даних розкладу
+const groupedScheduleData = computed(() => {
+  // Об'єкт для зберігання груп
+  const groups = {};
+  
+  // Групуємо записи за ключем (день, пара, предмет, аудиторія, викладач, підгрупа, номінатор)
+  scheduleData.value.forEach(item => {
+    // Створюємо унікальний ключ для групування
+    const key = `${item.day_of_week}-${item.namb_of_para}-${item.name_of_para}-${item.room}-${item.teacher}-${item.number_of_subgroup}-${item.nominator}`;
+    
+    if (!groups[key]) {
+      // Створюємо нову групу
+      groups[key] = {
+        ...item,
+        key,
+        groups: [item.name_group] // Початок списку груп
+      };
+    } else {
+      // Додаємо групу до існуючого запису
+      groups[key].groups.push(item.name_group);
+    }
+  });
+  
+  // Перетворюємо об'єкт в масив
+  return Object.values(groups);
+});
+
+// Функція для завантаження розкладу аудиторії
+const fetchRoomSchedule = async () => {
+  try {
+    loading.value = true;
+    error.value = null;
+    
+    // Кодуємо параметр room для URL
+    const encodedRoom = encodeURIComponent(filters.value.room);
+    
+    const response = await axios.get(`http://localhost:8000/room_schedule/?room=${encodedRoom}`);
+    
+    // Групуємо групи в розкладі аудиторії
+    const processedData = {};
+    
+    for (const day in response.data) {
+      processedData[day] = [];
+      
+      // Об'єкт для групування по параметрам
+      const paraGroups = {};
+      
+      response.data[day].forEach(para => {
+        // Ключ для групування
+        const key = `${para.para}-${para.subject}-${para.teacher}`;
+        
+        if (para.status === 'Зайнято') {
+          if (!paraGroups[key]) {
+            paraGroups[key] = {
+              ...para,
+              group: [para.group]
+            };
+          } else {
+            // Додаємо групу до масиву
+            paraGroups[key].group.push(para.group);
+          }
+        } else {
+          // Вільні пари не групуємо
+          paraGroups[key] = para;
+        }
+      });
+      
+      // Додаємо згруповані записи у відповідний день
+      processedData[day] = Object.values(paraGroups);
+    }
+    
+    roomScheduleData.value = processedData;
+    scheduleData.value = [];
+    showFreeScheduleGrid.value = false;
+    
+  } catch (err) {
+    error.value = `Помилка: ${err.response?.data?.detail || err.message}`;
+    roomScheduleData.value = null;
+  } finally {
+    loading.value = false;
+  }
+};
 
 // Дні тижня
 const daysOfWeek = ref([
-  'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота'
+  'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пятниця', 'Субота'
+])
+
+// Час пар (можна налаштувати)
+const paraTimes = ref([
+  null, // 0 пара не існує
+  '8:30-10:05', // 1 пара
+  '10:25-12:00', // 2 пара
+  '12:20-13:55', // 3 пара
+  '14:15-15:50', // 4 пара
+  '16:10-17:45', // 5 пара
+  '18:05-19:40', // 6 пара
+  '19:50-21:25', // 7 пара
+  '21:35-23:10'  // 8 пара
 ])
 
 // Фільтри
@@ -236,65 +383,109 @@ const filters = ref({
   busy: null
 })
 
+// Обробник зміни статусу зайнятості
+const handleBusyChange = () => {
+  if (filters.value.busy === false) {
+    showFreeScheduleGrid.value = true;
+    filters.value.namb_of_para = null;
+    
+    // Якщо вказано аудиторію - завантажуємо її розклад
+    if (filters.value.room) {
+      fetchData();
+    }
+  } else {
+    showFreeScheduleGrid.value = false;
+    roomScheduleData.value = null;
+  }
+}
+
 // Перевіряємо, чи є записи для конкретного дня тижня
 const hasDayInSchedule = (day) => {
-  return scheduleData.value.some(item => item.day_of_week === day);
+  if (showFreeScheduleGrid.value) {
+    // У режимі сітки показуємо всі дні
+    return daysOfWeek.value.includes(day)
+  }
+  return groupedScheduleData.value.some(item => item.day_of_week === day)
 }
 
 // Фільтруємо розклад для конкретного дня тижня (для відображення)
 const filterByDay = (day) => {
-  return scheduleData.value.filter(item => item.day_of_week === day);
+  return groupedScheduleData.value.filter(item => item.day_of_week === day)
+}
+
+// Отримуємо час пари за номером
+const getParaTime = (paraNumber) => {
+  return paraTimes.value[paraNumber] || 'Невідомо'
+}
+
+// Перевіряємо, чи пара вільна
+const isParaFree = (day, paraNumber) => {
+  // Знаходимо всі заняття для цього дня та пари
+  const busyItems = scheduleData.value.filter(item => 
+    item.day_of_week === day && 
+    item.namb_of_para === paraNumber &&
+    item.busy === true
+  )
+  
+  // Якщо немає жодного занятого заняття - пара вільна
+  return busyItems.length === 0
 }
 
 // Функція для debounce введення в полях фільтрів
+let debounceTimer = null
 const debounceFetch = () => {
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(fetchData, 300);
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(fetchData, 300)
 }
 
 // Завантаження даних з сервера
 const fetchData = async () => {
   try {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
     
-    // Формуємо параметри запиту, видаляючи пусті значення
-    const params = {}
-    Object.entries(filters.value).forEach(([key, value]) => {
-      if (value !== null && value !== '') {
-        params[key] = value
-      }
-    })
-    
-    console.log('Відправка запиту з параметрами:', params)
-    
-    // Використовуємо endpoint /days/ з фільтрами
-    const response = await axios.get('http://localhost:8000/days/', { params })
-    
-    // Перевіряємо, що дані в правильному форматі
-    if (!Array.isArray(response.data)) {
-      throw new Error('Невірний формат даних від сервера')
+    // Якщо вибрано "Вільні" та вказано аудиторію
+    if (filters.value.busy === false && filters.value.room) {
+      await fetchRoomSchedule();
+      return;
+    }
+    // Якщо вибрано "Вільні" та вказано групу
+    else if (filters.value.busy === false && filters.value.name_group) {
+      const response = await axios.get('http://localhost:8000/free_slots/', {
+        params: { name_group: filters.value.name_group }
+      });
+      scheduleData.value = response.data;
+      showFreeScheduleGrid.value = true;
+    } 
+    // Звичайний запит
+    else {
+      const params = {};
+      Object.entries(filters.value).forEach(([key, value]) => {
+        if (value !== null && value !== '') {
+          params[key] = value;
+        }
+      });
+      
+      const response = await axios.get('http://localhost:8000/days/', { params });
+      scheduleData.value = response.data;
+      showFreeScheduleGrid.value = false;
     }
     
-    scheduleData.value = response.data
-    console.log('Отримані дані:', scheduleData.value)
-    console.log('Кількість записів:', scheduleData.value.length)
   } catch (err) {
-    console.error('Помилка завантаження:', err)
-    error.value = `Помилка завантаження: ${err.message}`
-    scheduleData.value = [] // Очищаємо дані при помилці
+    error.value = `Помилка: ${err.response?.data?.detail || err.message}`;
+    scheduleData.value = [];
+    roomScheduleData.value = null;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 // Слідкуємо за змінами фільтрів і оновлюємо дані
-watch(filters, () => {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(fetchData, 300)
-}, { deep: true })
-
-let debounceTimer = null
+watch(() => filters.value.room, (newVal) => {
+  if (newVal && filters.value.busy === false) {
+    fetchData();
+  }
+});
 
 // Скидання фільтрів
 const resetFilters = () => {
@@ -309,7 +500,9 @@ const resetFilters = () => {
     room: '',
     teacher: '',
     busy: null
-  }
+  };
+  showFreeScheduleGrid.value = false;
+  roomScheduleData.value = null;
 }
 
 // Завантажуємо початкові дані при старті
@@ -528,4 +721,99 @@ onMounted(fetchData)
   color: #27ae60;
   font-weight: 500;
 }
+
+/* Стилі для сітки вільних пар */
+.free-schedule-grid {
+  display: grid;
+  grid-template-columns: 80px 150px 1fr;
+  gap: 1px;
+  background-color: #e0e0e0;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.grid-header {
+  display: contents;
+}
+
+.grid-header .grid-cell {
+  background-color: #4a90e2;
+  color: white;
+  padding: 10px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.grid-row {
+  display: contents;
+}
+
+.grid-row:nth-child(odd) .grid-cell {
+  background-color: #f8f9fa;
+}
+
+.grid-row:nth-child(even) .grid-cell {
+  background-color: #ffffff;
+}
+
+.grid-cell {
+  padding: 10px;
+  text-align: center;
+}
+
+.free-para .grid-cell {
+  background-color: #e8f5e9 !important;
+}
+
+.free-para:hover .grid-cell {
+  background-color: #d0e9d1 !important;
+}
+
+.room-schedule {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.day-schedule {
+  margin-bottom: 30px;
+}
+
+.para-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background-color: #fff;
+  border-left: 4px solid #e74c3c;
+}
+
+.para-item.free {
+  border-left-color: #27ae60;
+}
+
+.para-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.para-number {
+  font-weight: 600;
+}
+
+.para-status.free {
+  color: #27ae60;
+}
+
+.para-status.busy {
+  color: #e74c3c;
+}
+
+.para-details {
+  font-size: 14px;
+  color: #555;
+}
+
 </style>
