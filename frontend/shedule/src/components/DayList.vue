@@ -304,7 +304,7 @@ const fetchRoomSchedule = async () => {
     // Кодуємо параметр room для URL
     const encodedRoom = encodeURIComponent(filters.value.room);
     
-    const response = await axios.get(`https://roomsheduler.onrender.com/room_schedule/?room=${encodedRoom}`);
+    const response = await axios.get(`https://backend-roomsheduler.onrender.com/room_schedule/?room=${encodedRoom}`);
     
     // Групуємо групи в розкладі аудиторії
     const processedData = {};
@@ -451,7 +451,7 @@ const fetchData = async () => {
     }
     // Якщо вибрано "Вільні" та вказано групу
     else if (filters.value.busy === false && filters.value.name_group) {
-      const response = await axios.get('https://roomsheduler.onrender.com/free_slots/', {
+      const response = await axios.get('https://backend-roomsheduler.onrender.com/free_slots/', {
         params: { name_group: filters.value.name_group }
       });
       scheduleData.value = response.data;
@@ -466,7 +466,7 @@ const fetchData = async () => {
         }
       });
       
-      const response = await axios.get('https://roomsheduler.onrender.com/days/', { params });
+      const response = await axios.get('https://backend-roomsheduler.onrender.com/days/', { params });
       scheduleData.value = response.data;
       showFreeScheduleGrid.value = false;
     }
