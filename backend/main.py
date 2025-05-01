@@ -44,7 +44,7 @@ def get_days(
         busy: bool | None = Query(None),
         db: Session = Depends(get_db),
 ):
-    sql_query = "SELECT * FROM days WHERE 1=1"
+    sql_query = "SELECT * FROM schedule WHERE 1=1"
     params = {}
 
     if name_group:

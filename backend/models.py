@@ -4,7 +4,7 @@ from bd import Base
 
 
 class Days(Base):
-    __tablename__ = "days"
+    __tablename__ = "schedule"
 
     name_group = Column(String, primary_key=True)
     number_of_subgroup = Column(Integer)
