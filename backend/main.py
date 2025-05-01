@@ -102,7 +102,7 @@ def get_room_schedule(
         # Отримуємо всі пари для цієї аудиторії
         query = text("""
                     SELECT * 
-                    FROM days
+                    FROM schedule
                     WHERE room = :room
                 """)
 
