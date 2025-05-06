@@ -69,18 +69,6 @@
         </select>
       </div>
 
-      <!-- Фільтр за часом пари -->
-      <div class="filter-item">
-        <label for="time_of_para">Час пари:</label>
-        <input 
-          id="time_of_para"
-          v-model="filters.time_of_para" 
-          @input="debounceFetch" 
-          placeholder="Час (напр. 8:30-10:05)"
-          class="filter-input"
-        />
-      </div>
-
       <!-- Фільтр за назвою предмета -->
       <div class="filter-item">
         <label for="name_of_para">Назва предмета:</label>
@@ -153,13 +141,13 @@
   </div>
   
   <!-- Повідомлення про відсутність даних -->
-  <div v-if="!loading && !error && groupedScheduleData.length === 0" class="no-data">
+  <div v-if="!loading && !error && !hasData" class="no-data">
     <i class="no-data-icon">📭</i>
     <p>Немає даних, що відповідають заданим фільтрам</p>
   </div>
 
   <!-- Відображення розкладу -->
-  <div v-if="!loading && !error && groupedScheduleData.length > 0" class="schedule-container">
+  <div v-if="!loading && !error && hasData" class="schedule-container">
     <h3>Знайдено записів: {{ groupedScheduleData.length }}</h3>
     
     <!-- Групування по дням тижня -->
@@ -232,7 +220,7 @@
   </div>
 
   <!-- Блок для відображення розкладу аудиторії -->
-  <div v-if="roomScheduleData" class="room-schedule">
+  <div v-if="!loading && !error && roomScheduleData" class="room-schedule">
     <h3>Розклад аудиторії {{ filters.room }}</h3>
     
     <div v-for="(day, dayName) in roomScheduleData" :key="dayName" class="day-schedule">
@@ -257,7 +245,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup type="module">
 import { ref, onMounted, watch, computed } from 'vue'
 import axios from 'axios'
 
@@ -270,29 +258,25 @@ const roomScheduleData = ref(null)
 
 // Обчислене властивість для згрупованих даних розкладу
 const groupedScheduleData = computed(() => {
-  // Об'єкт для зберігання груп
   const groups = {};
-  
-  // Групуємо записи за ключем (день, пара, предмет, аудиторія, викладач, підгрупа, номінатор)
   scheduleData.value.forEach(item => {
-    // Створюємо унікальний ключ для групування
     const key = `${item.day_of_week}-${item.namb_of_para}-${item.name_of_para}-${item.room}-${item.teacher}-${item.number_of_subgroup}-${item.nominator}`;
-    
     if (!groups[key]) {
-      // Створюємо нову групу
       groups[key] = {
         ...item,
         key,
-        groups: [item.name_group] // Початок списку груп
+        groups: [item.name_group]
       };
     } else {
-      // Додаємо групу до існуючого запису
       groups[key].groups.push(item.name_group);
     }
   });
-  
-  // Перетворюємо об'єкт в масив
   return Object.values(groups);
+});
+
+// Перевіряємо наявність даних
+const hasData = computed(() => {
+  return groupedScheduleData.value.length > 0 || (roomScheduleData.value && Object.keys(roomScheduleData.value).length > 0);
 });
 
 // Функція для завантаження розкладу аудиторії
@@ -300,49 +284,29 @@ const fetchRoomSchedule = async () => {
   try {
     loading.value = true;
     error.value = null;
-    
-    // Кодуємо параметр room для URL
     const encodedRoom = encodeURIComponent(filters.value.room);
-    
     const response = await axios.get(`https://backend-roomsheduler.onrender.com/room_schedule/?room=${encodedRoom}`);
-    
-    // Групуємо групи в розкладі аудиторії
     const processedData = {};
-    
     for (const day in response.data) {
       processedData[day] = [];
-      
-      // Об'єкт для групування по параметрам
       const paraGroups = {};
-      
       response.data[day].forEach(para => {
-        // Ключ для групування
         const key = `${para.para}-${para.subject}-${para.teacher}`;
-        
         if (para.status === 'Зайнято') {
           if (!paraGroups[key]) {
-            paraGroups[key] = {
-              ...para,
-              group: [para.group]
-            };
+            paraGroups[key] = { ...para, group: [para.group] };
           } else {
-            // Додаємо групу до масиву
             paraGroups[key].group.push(para.group);
           }
         } else {
-          // Вільні пари не групуємо
           paraGroups[key] = para;
         }
       });
-      
-      // Додаємо згруповані записи у відповідний день
       processedData[day] = Object.values(paraGroups);
     }
-    
     roomScheduleData.value = processedData;
     scheduleData.value = [];
     showFreeScheduleGrid.value = false;
-    
   } catch (err) {
     error.value = `Помилка: ${err.response?.data?.detail || err.message}`;
     roomScheduleData.value = null;
@@ -352,21 +316,11 @@ const fetchRoomSchedule = async () => {
 };
 
 // Дні тижня
-const daysOfWeek = ref([
-  'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пятниця', 'Субота'
-])
+const daysOfWeek = ref(['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пятниця', 'Субота'])
 
-// Час пар (можна налаштувати)
+// Час пар
 const paraTimes = ref([
-  null, // 0 пара не існує
-  '8:30-10:05', // 1 пара
-  '10:25-12:00', // 2 пара
-  '12:20-13:55', // 3 пара
-  '14:15-15:50', // 4 пара
-  '16:10-17:45', // 5 пара
-  '18:05-19:40', // 6 пара
-  '19:50-21:25', // 7 пара
-  '21:35-23:10'  // 8 пара
+  null, '8:30-10:05', '10:25-12:00', '12:20-13:55', '14:15-15:50', '16:10-17:45', '18:05-19:40', '19:50-21:25', '21:35-23:10'
 ])
 
 // Фільтри
@@ -375,7 +329,6 @@ const filters = ref({
   number_of_subgroup: null,
   day_of_week: null,
   nominator: null,
-  time_of_para: '',
   namb_of_para: null,
   name_of_para: '',
   room: '',
@@ -388,8 +341,6 @@ const handleBusyChange = () => {
   if (filters.value.busy === false) {
     showFreeScheduleGrid.value = true;
     filters.value.namb_of_para = null;
-    
-    // Якщо вказано аудиторію - завантажуємо її розклад
     if (filters.value.room) {
       fetchData();
     }
@@ -399,78 +350,56 @@ const handleBusyChange = () => {
   }
 }
 
-// Перевіряємо, чи є записи для конкретного дня тижня
+// Перевіряємо, чи є записи для дня
 const hasDayInSchedule = (day) => {
-  if (showFreeScheduleGrid.value) {
-    // У режимі сітки показуємо всі дні
-    return daysOfWeek.value.includes(day)
-  }
-  return groupedScheduleData.value.some(item => item.day_of_week === day)
+  if (showFreeScheduleGrid.value) return daysOfWeek.value.includes(day);
+  return groupedScheduleData.value.some(item => item.day_of_week === day);
 }
 
-// Фільтруємо розклад для конкретного дня тижня (для відображення)
-const filterByDay = (day) => {
-  return groupedScheduleData.value.filter(item => item.day_of_week === day)
-}
+// Фільтруємо розклад для дня
+const filterByDay = (day) => groupedScheduleData.value.filter(item => item.day_of_week === day);
 
-// Отримуємо час пари за номером
-const getParaTime = (paraNumber) => {
-  return paraTimes.value[paraNumber] || 'Невідомо'
-}
+// Отримуємо час пари
+const getParaTime = (paraNumber) => paraTimes.value[paraNumber] || 'Невідомо';
 
 // Перевіряємо, чи пара вільна
 const isParaFree = (day, paraNumber) => {
-  // Знаходимо всі заняття для цього дня та пари
   const busyItems = scheduleData.value.filter(item => 
-    item.day_of_week === day && 
-    item.namb_of_para === paraNumber &&
-    item.busy === true
-  )
-  
-  // Якщо немає жодного занятого заняття - пара вільна
-  return busyItems.length === 0
+    item.day_of_week === day && item.namb_of_para === paraNumber && item.busy === true
+  );
+  return busyItems.length === 0;
 }
 
-// Функція для debounce введення в полях фільтрів
+// Debounce для фільтрів
 let debounceTimer = null
 const debounceFetch = () => {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(fetchData, 300)
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(fetchData, 300);
 }
 
-// Завантаження даних з сервера
+// Завантаження даних
 const fetchData = async () => {
   try {
     loading.value = true;
     error.value = null;
-    
-    // Якщо вибрано "Вільні" та вказано аудиторію
     if (filters.value.busy === false && filters.value.room) {
       await fetchRoomSchedule();
       return;
-    }
-    // Якщо вибрано "Вільні" та вказано групу
-    else if (filters.value.busy === false && filters.value.name_group) {
+    } else if (filters.value.busy === false && filters.value.name_group) {
       const response = await axios.get('https://backend-roomsheduler.onrender.com/free_slots/', {
         params: { name_group: filters.value.name_group }
       });
       scheduleData.value = response.data;
       showFreeScheduleGrid.value = true;
-    } 
-    // Звичайний запит
-    else {
+    } else {
       const params = {};
       Object.entries(filters.value).forEach(([key, value]) => {
-        if (value !== null && value !== '') {
-          params[key] = value;
-        }
+        if (value !== null && value !== '') params[key] = value;
       });
-      
       const response = await axios.get('https://backend-roomsheduler.onrender.com/days/', { params });
       scheduleData.value = response.data;
       showFreeScheduleGrid.value = false;
     }
-    
   } catch (err) {
     error.value = `Помилка: ${err.response?.data?.detail || err.message}`;
     scheduleData.value = [];
@@ -480,11 +409,9 @@ const fetchData = async () => {
   }
 }
 
-// Слідкуємо за змінами фільтрів і оновлюємо дані
+// Слідкуємо за змінами room
 watch(() => filters.value.room, (newVal) => {
-  if (newVal && filters.value.busy === false) {
-    fetchData();
-  }
+  if (newVal && filters.value.busy === false) fetchData();
 });
 
 // Скидання фільтрів
@@ -505,7 +432,7 @@ const resetFilters = () => {
   roomScheduleData.value = null;
 }
 
-// Завантажуємо початкові дані при старті
+// Завантажуємо дані при старті
 onMounted(fetchData)
 </script>
 
@@ -519,15 +446,17 @@ onMounted(fetchData)
 }
 
 .filters {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
+  align-items: flex-start;
 }
 
 .filter-item {
   display: flex;
   flex-direction: column;
   min-width: 200px;
+  padding: 0 8px;
 }
 
 .filter-item label {
@@ -552,17 +481,21 @@ onMounted(fetchData)
 
 .filter-buttons {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: flex-end;
+  align-items: stretch;
+  padding: 0 8px;
 }
 
 .reset-button, .apply-button {
-  padding: 8px 16px;
+  padding: 10px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 14px;
   transition: background-color 0.2s;
+  width: 100%;
 }
 
 .reset-button {
@@ -588,8 +521,9 @@ onMounted(fetchData)
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 20px; /* Reduced padding to minimize empty space */
   text-align: center;
+  min-height: 100px; /* Ensure minimum height for visibility */
 }
 
 .spinner {
@@ -616,17 +550,18 @@ onMounted(fetchData)
 
 .schedule-container {
   padding: 15px;
+  margin-bottom: 0; /* Remove bottom margin */
 }
 
 .day-group {
-  margin-bottom: 30px;
+  margin-bottom: 15px; /* Reduced margin to minimize empty space */
 }
 
 .day-title {
   padding: 10px 15px;
   background-color: #f0f4f8;
   border-radius: 6px;
-  margin-bottom: 15px;
+  margin-bottom: 10px; /* Reduced margin */
   color: #2c3e50;
   font-weight: 600;
 }
@@ -729,7 +664,7 @@ onMounted(fetchData)
   gap: 1px;
   background-color: #e0e0e0;
   border: 1px solid #e0e0e0;
-  margin-bottom: 20px;
+  margin-bottom: 0; /* Remove bottom margin */
 }
 
 .grid-header {
@@ -770,14 +705,14 @@ onMounted(fetchData)
 }
 
 .room-schedule {
-  margin-top: 30px;
-  padding: 20px;
+  padding: 15px; /* Reduced padding */
+  margin-bottom: 0; /* Remove bottom margin */
   background-color: #f8f9fa;
   border-radius: 8px;
 }
 
 .day-schedule {
-  margin-bottom: 30px;
+  margin-bottom: 15px; /* Reduced margin */
 }
 
 .para-item {
@@ -815,5 +750,4 @@ onMounted(fetchData)
   font-size: 14px;
   color: #555;
 }
-
 </style>
