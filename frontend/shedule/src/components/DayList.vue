@@ -489,6 +489,20 @@ const handleRoomInput = async () => {
             value !== '' && 
             key !== 'room' // Exclude the room filter itself
           )
+          .map(([key, value]) => {
+            // Map frontend parameter names to backend parameter names
+            const paramMap = {
+              'namb_of_para': 'number_of_para',
+              'name_of_para': 'name_of_para',
+              'name_group': 'name_group',
+              'number_of_subgroup': 'number_of_subgroup',
+              'day_of_week': 'day_of_week',
+              'nominator': 'nominator',
+              'teacher': 'teacher',
+              'busy': 'busy'
+            }
+            return [paramMap[key] || key, value]
+          })
       )
     }
     
