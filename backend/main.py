@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import days, rooms
+from routers import days, rooms, lessons, groups, teachers
 
 app = FastAPI()
 
@@ -15,6 +15,9 @@ app.add_middleware(
 # Підключення роутера
 app.include_router(days.router)
 app.include_router(rooms.router)
+app.include_router(lessons.router)
+app.include_router(groups.router)
+app.include_router(teachers.router)
 
 if __name__ == "__main__":
     import uvicorn
