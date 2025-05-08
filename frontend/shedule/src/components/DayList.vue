@@ -69,7 +69,7 @@
         </select>
       </div>
 
-      <!-- Фільтр за назвою предмета -->
+      <!-- Фільтрt за назвою предмета -->
       <div class="filter-item">
         <label for="name_of_para">Назва предмета:</label>
         <input 
