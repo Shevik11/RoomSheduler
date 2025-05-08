@@ -94,11 +94,14 @@
             @focus="showSuggestions = true"
             @blur="handleBlur"
           />
-          <div v-if="showSuggestions && (filteredRooms.length > 0 || isFetchingRooms)" class="suggestions-list">
+          <div v-if="showSuggestions" class="suggestions-list">
             <div v-if="isFetchingRooms" class="suggestion-item loading">
               Завантаження...
             </div>
             <template v-else>
+              <div v-if="filteredRooms.length === 0" class="suggestion-item no-results">
+                Немає відповідних аудиторій
+              </div>
               <div 
                 v-for="room in filteredRooms" 
                 :key="room"
@@ -489,11 +492,29 @@ const handleRoomInput = async () => {
       )
     }
     
-    const response = await axios.get('https://backend-roomsheduler.onrender.com/room/suggestions/', { params })
-    filteredRooms.value = response.data
+    console.log('Fetching room suggestions with params:', params) // Debug log
+    const response = await axios.get('https://backend-roomsheduler.onrender.com/rooms/suggestions/', { params })
+    console.log('Received room suggestions:', response.data) // Debug log
+    
+    // Ensure we have an array of suggestions
+    filteredRooms.value = Array.isArray(response.data) ? response.data : []
+    
+    // If no suggestions and we have input, show all rooms that match the input
+    if (filteredRooms.value.length === 0 && input) {
+      filteredRooms.value = roomSuggestions.value.filter(room => 
+        room.toLowerCase().includes(input.toLowerCase())
+      )
+    }
   } catch (err) {
     console.error('Error fetching room suggestions:', err)
-    filteredRooms.value = []
+    // Fallback to local filtering if API fails
+    if (input) {
+      filteredRooms.value = roomSuggestions.value.filter(room => 
+        room.toLowerCase().includes(input.toLowerCase())
+      )
+    } else {
+      filteredRooms.value = []
+    }
   } finally {
     isFetchingRooms.value = false
   }
@@ -863,6 +884,16 @@ const handleBlur = () => {
 }
 
 .suggestion-item.loading:hover {
+  background-color: transparent;
+}
+
+.suggestion-item.no-results {
+  color: #666;
+  font-style: italic;
+  cursor: default;
+}
+
+.suggestion-item.no-results:hover {
   background-color: transparent;
 }
 </style>
