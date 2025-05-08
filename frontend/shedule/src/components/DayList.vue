@@ -344,8 +344,8 @@ import { ref, onMounted, watch, computed } from 'vue'
 import axios from 'axios'
 
 // API Base URL - змінити на реальний URL в продакшені
-// const API_BASE_URL = 'https://backend-roomsheduler.onrender.com';
-const API_BASE_URL = 'http://localhost:8000'; // Для локальної розробки
+ const API_BASE_URL = 'https://backend-roomsheduler.onrender.com';
+// const API_BASE_URL = 'http://localhost:8000'; // Для локальної розробки
 //
 // Стани
 const loading = ref(true)
