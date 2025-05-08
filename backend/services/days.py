@@ -37,8 +37,8 @@ def fetch_days_by_filters(
         sql_query += " AND namb_of_para = :namb_of_para"
         params["namb_of_para"] = namb_of_para
     if name_of_para:
-        sql_query += " AND name_of_para = :name_of_para"
-        params["name_of_para"] = name_of_para
+        sql_query += " AND name_of_para ILIKE :name_of_para"
+        params["name_of_para"] = f"%{name_of_para}%"
     if room:
         sql_query += " AND room = :room"
         params["room"] = room
