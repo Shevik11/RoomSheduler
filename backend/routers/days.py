@@ -53,7 +53,4 @@ def get_room_schedule(
     room: str = Query(..., description="Номер аудиторії (наприклад: '1/Б')"),
     db: Session = Depends(get_db)
 ):
-    return fetch_room_schedule(db,room)
-
-
-
+    return fetch_room_schedule(room, db)

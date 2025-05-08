@@ -227,13 +227,13 @@
     <div class="spinner"></div>
     <p>Завантаження даних...</p>
   </div>
-  
+
   <!-- Повідомлення про помилку -->
   <div v-if="error" class="error">
     <i class="error-icon">⚠️</i>
     <p>{{ error }}</p>
   </div>
-  
+
   <!-- Повідомлення про відсутність даних -->
   <div v-if="!loading && !error && !hasData" class="no-data">
     <i class="no-data-icon">📭</i>
@@ -243,11 +243,11 @@
   <!-- Відображення розкладу -->
   <div v-if="!loading && !error && hasData" class="schedule-container">
     <h3>Знайдено записів: {{ groupedScheduleData.length }}</h3>
-    
+
     <!-- Групування по дням тижня -->
     <div v-for="day in daysOfWeek" :key="day" class="day-group">
       <h4 v-if="hasDayInSchedule(day)" class="day-title">{{ day }}</h4>
-      
+
       <!-- Звичайний режим відображення -->
       <div v-if="!showFreeScheduleGrid" class="schedule">
         <div 
@@ -259,27 +259,27 @@
             <span class="item-group">{{ item.groups.join(', ') }}</span>
             <span v-if="item.number_of_subgroup" class="item-subgroup">(підгрупа {{ item.number_of_subgroup }})</span>
           </div>
-          
+
           <div class="item-details">
             <div class="item-para">
               <span class="para-number">Пара {{ item.namb_of_para }}</span>
               <span class="para-time">{{ item.time_of_para }}</span>
             </div>
-            
+
             <div class="item-subject">{{ item.name_of_para }}</div>
-            
+
             <div class="item-location">
               <span v-if="item.room" class="item-room">Аудиторія: {{ item.room }}</span>
             </div>
-            
+
             <div class="item-teacher" v-if="item.teacher">
               <span>Викладач: {{ item.teacher }}</span>
             </div>
-            
+
             <div class="item-nominator" v-if="item.nominator">
               <span>{{ item.nominator }}</span>
             </div>
-            
+
             <div class="item-status">
               <span :class="item.busy ? 'status-busy' : 'status-free'">
                 {{ item.busy ? 'Зайнято' : 'Вільно' }}
@@ -288,7 +288,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Сітка вільних пар -->
       <div v-if="showFreeScheduleGrid" class="free-schedule-grid">
         <div class="grid-header">
@@ -316,10 +316,10 @@
   <!-- Блок для відображення розкладу аудиторії -->
   <div v-if="!loading && !error && roomScheduleData" class="room-schedule">
     <h3>Розклад аудиторії {{ filters.room }}</h3>
-    
+
     <div v-for="(day, dayName) in roomScheduleData" :key="dayName" class="day-schedule">
       <h4>{{ dayName }}</h4>
-      
+
       <div v-for="para in day" :key="para.para" class="para-item" :class="{'free': para.status === 'Вільно'}">
         <div class="para-header">
           <span class="para-number">{{ para.para }} пара</span>
@@ -328,7 +328,7 @@
             {{ para.status }}
           </span>
         </div>
-        
+
         <div v-if="para.status === 'Зайнято'" class="para-details">
           <div>Групи: {{ Array.isArray(para.group) ? para.group.join(', ') : para.group }}</div>
           <div>Предмет: {{ para.subject }}</div>
@@ -346,7 +346,7 @@ import axios from 'axios'
 // API Base URL - змінити на реальний URL в продакшені
 // const API_BASE_URL = 'https://backend-roomsheduler.onrender.com';
 const API_BASE_URL = 'http://localhost:8000'; // Для локальної розробки
-
+//
 // Стани
 const loading = ref(true)
 const error = ref(null)
@@ -437,11 +437,11 @@ const handleGroupInput = async (event) => {
   const input = event.target.value;
   filters.value.name_group = input;
   showGroupSuggestions.value = true;
-  
+
   try {
     isFetchingGroups.value = true;
     const params = { query: input };
-    
+
     const response = await axios.get(`${API_BASE_URL}/groups/suggestions/`, { params });
     filteredGroups.value = Array.isArray(response.data) ? response.data : [];
   } catch (err) {
@@ -469,14 +469,14 @@ const handleSubjectInput = async (event) => {
   const input = event.target.value;
   filters.value.name_of_para = input;
   showSubjectSuggestions.value = true;
-  
+
   try {
     isFetchingSubjects.value = true;
     const params = { query: input };
-    
+
     // Додаємо додаткові фільтри, якщо вони є
     if (filters.value.name_group) params.name_group = filters.value.name_group;
-    
+
     const response = await axios.get(`${API_BASE_URL}/lessons/suggestions/`, { params });
     filteredSubjects.value = Array.isArray(response.data) ? response.data : [];
   } catch (err) {
@@ -504,7 +504,7 @@ const handleRoomInput = async (event) => {
   const input = event.target.value;
   filters.value.room = input;
   showRoomSuggestions.value = true;
-  
+
   try {
     isFetchingRooms.value = true;
     // Створюємо об'єкт параметрів з усіма поточними фільтрами
@@ -533,12 +533,12 @@ const handleRoomInput = async (event) => {
           })
       )
     }
-    
+
     // Якщо вибрана група, переконуємося, що отримуємо аудиторії тільки для цієї групи
     if (filters.value.name_group) {
       params.name_group = filters.value.name_group;
     }
-    
+
     const response = await axios.get(`${API_BASE_URL}/rooms/suggestions/`, { params });
     filteredRooms.value = Array.isArray(response.data) ? response.data : [];
   } catch (err) {
@@ -566,15 +566,15 @@ const handleTeacherInput = async (event) => {
   const input = event.target.value;
   filters.value.teacher = input;
   showTeacherSuggestions.value = true;
-  
+
   try {
     isFetchingTeachers.value = true;
     const params = { query: input };
-    
+
     // Додаємо додаткові фільтри, якщо вони є
     if (filters.value.name_group) params.name_group = filters.value.name_group;
     if (filters.value.name_of_para) params.name_of_para = filters.value.name_of_para;
-    
+
     const response = await axios.get(`${API_BASE_URL}/teachers/suggestions/`, { params });
     filteredTeachers.value = Array.isArray(response.data) ? response.data : [];
   } catch (err) {
@@ -622,8 +622,40 @@ const fetchRoomSchedule = async () => {
       });
       processedData[day] = Object.values(paraGroups);
     }
-    roomScheduleData.value = processedData;
-    scheduleData.value = [];
+
+    // When "Вільні" is selected, filter out busy periods from roomScheduleData
+    if (filters.value.busy === false) {
+      const filteredData = {};
+      for (const day in processedData) {
+        filteredData[day] = processedData[day].filter(para => para.status === 'Вільно');
+      }
+      roomScheduleData.value = filteredData;
+    } else {
+      roomScheduleData.value = processedData;
+    }
+
+    // Create scheduleData items for free periods
+    const freePeriodsData = [];
+    for (const day in processedData) {
+      processedData[day].forEach(para => {
+        if (para.status === 'Вільно') {
+          freePeriodsData.push({
+            day_of_week: day,
+            namb_of_para: para.para,
+            time_of_para: para.time,
+            name_of_para: 'Вільно',
+            room: filters.value.room,
+            teacher: '',
+            number_of_subgroup: null,
+            nominator: null,
+            busy: false,
+            name_group: ''
+          });
+        }
+      });
+    }
+
+    scheduleData.value = freePeriodsData;
     showFreeScheduleGrid.value = false;
   } catch (err) {
     error.value = `Помилка: ${err.response?.data?.detail || err.message}`;
@@ -674,6 +706,65 @@ const fetchData = async () => {
       });
       scheduleData.value = response.data;
       showFreeScheduleGrid.value = true;
+    } else if (filters.value.busy === null && filters.value.room) {
+      // When "Всі" is selected and a room is specified, show both busy and free periods
+      const encodedRoom = encodeURIComponent(filters.value.room);
+      const response = await axios.get(`${API_BASE_URL}/room_schedule/?room=${encodedRoom}`);
+      const processedData = {};
+      for (const day in response.data) {
+        processedData[day] = [];
+        const paraGroups = {};
+        response.data[day].forEach(para => {
+          const key = `${para.para}-${para.subject}-${para.teacher}`;
+          if (para.status === 'Зайнято') {
+            if (!paraGroups[key]) {
+              paraGroups[key] = { ...para, group: [para.group] };
+            } else {
+              paraGroups[key].group.push(para.group);
+            }
+          } else {
+            paraGroups[key] = para;
+          }
+        });
+        processedData[day] = Object.values(paraGroups);
+      }
+      roomScheduleData.value = processedData;
+
+      // Create scheduleData items for both busy and free periods
+      const allPeriodsData = [];
+      for (const day in processedData) {
+        processedData[day].forEach(para => {
+          if (para.status === 'Зайнято') {
+            allPeriodsData.push({
+              day_of_week: day,
+              namb_of_para: para.para,
+              time_of_para: para.time,
+              name_of_para: para.subject || 'Зайнято',
+              room: filters.value.room,
+              teacher: para.teacher || '',
+              number_of_subgroup: null,
+              nominator: null,
+              busy: true,
+              name_group: Array.isArray(para.group) ? para.group.join(', ') : para.group || ''
+            });
+          } else {
+            allPeriodsData.push({
+              day_of_week: day,
+              namb_of_para: para.para,
+              time_of_para: para.time,
+              name_of_para: 'Вільно',
+              room: filters.value.room,
+              teacher: '',
+              number_of_subgroup: null,
+              nominator: null,
+              busy: false,
+              name_group: ''
+            });
+          }
+        });
+      }
+      scheduleData.value = allPeriodsData;
+      showFreeScheduleGrid.value = false;
     } else {
       const params = {};
       Object.entries(filters.value).forEach(([key, value]) => {
@@ -717,13 +808,13 @@ const resetFilters = () => {
   showSubjectSuggestions.value = false;
   showRoomSuggestions.value = false;
   showTeacherSuggestions.value = false;
-  
+
   // Скидаємо кешовані результати підказок
   filteredGroups.value = [];
   filteredSubjects.value = [];
   filteredRooms.value = [];
   filteredTeachers.value = [];
-  
+
   // Оновлюємо дані
   fetchData();
 }
