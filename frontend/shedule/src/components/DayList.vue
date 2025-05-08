@@ -84,19 +84,27 @@
       <!-- Фільтр за аудиторією -->
       <div class="filter-item">
         <label for="room">Аудиторія:</label>
-        <input 
-          id="room"
-          v-model="filters.room" 
-          @input="debounceFetch" 
-          placeholder="Введіть номер аудиторії"
-          class="filter-input"
-          list="room-suggestions"
-        />
-        <datalist id="room-suggestions">
-          <option v-for="room in roomSuggestions" :key="room" :value="room">
-            {{ room }}
-          </option>
-        </datalist>
+        <div class="autocomplete-container">
+          <input 
+            id="room"
+            v-model="filters.room" 
+            @input="handleRoomInput" 
+            placeholder="Введіть номер аудиторії"
+            class="filter-input"
+            @focus="showSuggestions = true"
+            @blur="handleBlur"
+          />
+          <div v-if="showSuggestions && filteredRooms.length > 0" class="suggestions-list">
+            <div 
+              v-for="room in filteredRooms" 
+              :key="room"
+              class="suggestion-item"
+              @mousedown="selectRoom(room)"
+            >
+              {{ room }}
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Фільтр за викладачем -->
@@ -451,6 +459,30 @@ const resetFilters = () => {
 
 // Завантажуємо дані при старті
 onMounted(fetchData)
+
+// Add these after roomSuggestions ref
+const showSuggestions = ref(false)
+const filteredRooms = ref([])
+
+const handleRoomInput = () => {
+  const input = filters.value.room.toLowerCase()
+  filteredRooms.value = roomSuggestions.value.filter(room => 
+    room.toLowerCase().includes(input)
+  )
+  showSuggestions.value = true
+  debounceFetch()
+}
+
+const selectRoom = (room) => {
+  filters.value.room = room
+  showSuggestions.value = false
+}
+
+const handleBlur = () => {
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 200)
+}
 </script>
 
 <style scoped>
@@ -766,5 +798,34 @@ onMounted(fetchData)
 .para-details {
   font-size: 14px;
   color: #555;
+}
+
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+  background-color: #f0f4f8;
 }
 </style>
