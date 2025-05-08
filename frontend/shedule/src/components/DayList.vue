@@ -93,6 +93,8 @@
             class="filter-input"
             @focus="showSuggestions = true"
             @blur="handleBlur"
+            type="text"
+            autocomplete="off"
           />
           <div v-if="showSuggestions" class="suggestions-list">
             <div v-if="isFetchingRooms" class="suggestion-item loading">
@@ -108,7 +110,7 @@
                 v-for="room in filteredRooms" 
                 :key="room"
                 class="suggestion-item"
-                @mousedown="selectRoom(room)"
+                @mousedown.prevent="selectRoom(room)"
               >
                 {{ room }}
               </div>
@@ -309,7 +311,8 @@ const fetchRoomSchedule = async () => {
     loading.value = true;
     error.value = null;
     const encodedRoom = encodeURIComponent(filters.value.room);
-    const response = await axios.get(`https://backend-roomsheduler.onrender.com/room_schedule/?room=${encodedRoom}`);
+    const response = await axios.get(`http://room_schedule/?room=${encodedRoom}`);
+    // const response = await axios.get(`https://backend-roomsheduler.onrender.com/room_schedule/?room=${encodedRoom}`);
     const processedData = {};
     for (const day in response.data) {
       processedData[day] = [];
@@ -421,7 +424,10 @@ const fetchData = async () => {
       await fetchRoomSchedule();
       return;
     } else if (filters.value.busy === false && filters.value.name_group) {
-      const response = await axios.get('https://backend-roomsheduler.onrender.com/free_slots/', {
+      // const response = await axios.get('https://backend-roomsheduler.onrender.com/free_slots/', 
+      const response = await axios.get('http://localhost:8000/free_slots/', 
+
+      {
         params: { name_group: filters.value.name_group }
       });
       scheduleData.value = response.data;
@@ -431,7 +437,8 @@ const fetchData = async () => {
       Object.entries(filters.value).forEach(([key, value]) => {
         if (value !== null && value !== '') params[key] = value;
       });
-      const response = await axios.get('https://backend-roomsheduler.onrender.com/days/', { params });
+      const response = await axios.get('http://localhost:8000/days/', { params });
+      // const response = await axios.get('https://backend-roomsheduler.onrender.com/days/', { params });
       scheduleData.value = response.data;
       showFreeScheduleGrid.value = false;
     }
@@ -475,8 +482,9 @@ const showSuggestions = ref(false)
 const filteredRooms = ref([])
 const isFetchingRooms = ref(false)
 
-const handleRoomInput = async () => {
-  const input = filters.value.room
+const handleRoomInput = async (event) => {
+  const input = event.target.value
+  filters.value.room = input
   showSuggestions.value = true
   
   try {
@@ -514,7 +522,8 @@ const handleRoomInput = async () => {
     }
     
     console.log('Fetching room suggestions with params:', params) // Debug log
-    const response = await axios.get('https://backend-roomsheduler.onrender.com/rooms/suggestions/', { params })
+    const response = await axios.get('http://localhost:8000/rooms/suggestions/', { params })
+    // const response = await axios.get('https://backend-roomsheduler.onrender.com/rooms/suggestions/', { params })
     console.log('Received room suggestions:', response.data) // Debug log
     
     // Ensure we have an array of suggestions

@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from typing import Optional, List
 from dependencies.database import get_db
+from sqlalchemy import text, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
     prefix="/rooms",
@@ -17,7 +19,8 @@ async def get_room_suggestions(
     number_of_para: Optional[int] = None,
     name_of_para: Optional[str] = None,
     teacher: Optional[str] = None,
-    busy: Optional[bool] = None
+    busy: Optional[bool] = None,
+    db: AsyncSession = Depends(get_db)
 ):
     # Build your base query
     base_query = """
@@ -25,49 +28,50 @@ async def get_room_suggestions(
         FROM schedule 
         WHERE 1=1
     """
-    params = []
+    params = {}
     
     # Add filters based on provided parameters
     if query:
-        base_query += " AND room ILIKE %s"
-        params.append(f"%{query}%")
+        base_query += " AND room ILIKE :query"
+        params["query"] = f"%{query}%"
     
     if name_group:
-        base_query += " AND name_group = %s"
-        params.append(name_group)
+        base_query += " AND name_group = :name_group"
+        params["name_group"] = name_group
     
     if number_of_subgroup is not None:
-        base_query += " AND number_of_subgroup = %s"
-        params.append(number_of_subgroup)
+        base_query += " AND number_of_subgroup = :number_of_subgroup"
+        params["number_of_subgroup"] = number_of_subgroup
     
     if day_of_week:
-        base_query += " AND day_of_week = %s"
-        params.append(day_of_week)
+        base_query += " AND day_of_week = :day_of_week"
+        params["day_of_week"] = day_of_week
     
     if nominator:
-        base_query += " AND nominator = %s"
-        params.append(nominator)
+        base_query += " AND nominator = :nominator"
+        params["nominator"] = nominator
     
     if number_of_para is not None:
-        base_query += " AND number_of_para = %s"
-        params.append(number_of_para)
+        base_query += " AND number_of_para = :number_of_para"
+        params["number_of_para"] = number_of_para
     
     if name_of_para:
-        base_query += " AND name_of_para ILIKE %s"
-        params.append(f"%{name_of_para}%")
+        base_query += " AND name_of_para ILIKE :name_of_para"
+        params["name_of_para"] = f"%{name_of_para}%"
     
     if teacher:
-        base_query += " AND teacher ILIKE %s"
-        params.append(f"%{teacher}%")
+        base_query += " AND teacher ILIKE :teacher"
+        params["teacher"] = f"%{teacher}%"
     
     if busy is not None:
-        base_query += " AND busy = %s"
-        params.append(busy)
+        base_query += " AND busy = :busy"
+        params["busy"] = busy
     
     # Add order by to sort results
     base_query += " ORDER BY room"
     
     # Execute query and return results
-    database = await get_db()
-    results = await database.fetch_all(base_query, params)
-    return [row["room"] for row in results] 
+    stmt = text(base_query)
+    result = db.execute(stmt, params)
+    rows = result.all()
+    return [row[0] for row in rows] 
