@@ -100,7 +100,9 @@
             </div>
             <template v-else>
               <div v-if="filteredRooms.length === 0" class="suggestion-item no-results">
-                Немає відповідних аудиторій
+                {{ filters.value.name_group 
+                  ? `Немає вільних аудиторій для групи ${filters.value.name_group}` 
+                  : 'Немає відповідних аудиторій' }}
               </div>
               <div 
                 v-for="room in filteredRooms" 
@@ -506,6 +508,11 @@ const handleRoomInput = async () => {
       )
     }
     
+    // If we have a group selected, ensure we're only getting rooms for that group
+    if (filters.value.name_group) {
+      params.name_group = filters.value.name_group
+    }
+    
     console.log('Fetching room suggestions with params:', params) // Debug log
     const response = await axios.get('https://backend-roomsheduler.onrender.com/rooms/suggestions/', { params })
     console.log('Received room suggestions:', response.data) // Debug log
@@ -513,22 +520,14 @@ const handleRoomInput = async () => {
     // Ensure we have an array of suggestions
     filteredRooms.value = Array.isArray(response.data) ? response.data : []
     
-    // If no suggestions and we have input, show all rooms that match the input
-    if (filteredRooms.value.length === 0 && input) {
-      filteredRooms.value = roomSuggestions.value.filter(room => 
-        room.toLowerCase().includes(input.toLowerCase())
-      )
+    // If no suggestions and we have input, don't fall back to local filtering
+    // as it won't respect the group filter
+    if (filteredRooms.value.length === 0) {
+      filteredRooms.value = []
     }
   } catch (err) {
     console.error('Error fetching room suggestions:', err)
-    // Fallback to local filtering if API fails
-    if (input) {
-      filteredRooms.value = roomSuggestions.value.filter(room => 
-        room.toLowerCase().includes(input.toLowerCase())
-      )
-    } else {
-      filteredRooms.value = []
-    }
+    filteredRooms.value = []
   } finally {
     isFetchingRooms.value = false
   }
