@@ -102,10 +102,10 @@
             </div>
             <template v-else>
               <div v-if="filteredRooms.length === 0" class="suggestion-item no-results">
-                {{ filters.value.name_group 
-                  ? `Немає вільних аудиторій для групи ${filters.value.name_group}` 
-                  : 'Немає відповідних аудиторій' }}
-              </div>
+              {{ (filters.value && filters.value.name_group) 
+                ? `Немає вільних аудиторій для групи ${filters.value.name_group}` 
+                : 'Немає відповідних аудиторій' }}
+            </div>
               <div 
                 v-for="room in filteredRooms" 
                 :key="room"
