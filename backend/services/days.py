@@ -43,8 +43,8 @@ def fetch_days_by_filters(
         sql_query += " AND room = :room"
         params["room"] = room
     if teacher:
-        sql_query += " AND teacher = :teacher"
-        params["teacher"] = teacher
+        sql_query += " AND teacher ILIKE :teacher"
+        params["teacher"] = f"%{teacher}%"
     if busy is not None:
         sql_query += " AND busy = :busy"
         params["busy"] = busy
