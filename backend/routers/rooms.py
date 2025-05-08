@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from typing import Optional, List
-from dependencies.database import get_database
+from dependencies.database import get_db
 
 router = APIRouter(
     prefix="/rooms",
@@ -68,6 +68,6 @@ async def get_room_suggestions(
     base_query += " ORDER BY room"
     
     # Execute query and return results
-    database = await get_database()
+    database = await get_db()
     results = await database.fetch_all(base_query, params)
     return [row["room"] for row in results] 

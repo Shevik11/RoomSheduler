@@ -489,7 +489,7 @@ const handleRoomInput = async () => {
       )
     }
     
-    const response = await axios.get('https://backend-roomsheduler.onrender.com/room_suggestions/', { params })
+    const response = await axios.get('https://backend-roomsheduler.onrender.com/room/suggestions/', { params })
     filteredRooms.value = response.data
   } catch (err) {
     console.error('Error fetching room suggestions:', err)
