@@ -311,8 +311,8 @@ const fetchRoomSchedule = async () => {
     loading.value = true;
     error.value = null;
     const encodedRoom = encodeURIComponent(filters.value.room);
-    const response = await axios.get(`http://room_schedule/?room=${encodedRoom}`);
-    // const response = await axios.get(`https://backend-roomsheduler.onrender.com/room_schedule/?room=${encodedRoom}`);
+    // const response = await axios.get(`http://room_schedule/?room=${encodedRoom}`);
+    const response = await axios.get(`https://backend-roomsheduler.onrender.com/room_schedule/?room=${encodedRoom}`);
     const processedData = {};
     for (const day in response.data) {
       processedData[day] = [];
@@ -424,8 +424,8 @@ const fetchData = async () => {
       await fetchRoomSchedule();
       return;
     } else if (filters.value.busy === false && filters.value.name_group) {
-      // const response = await axios.get('https://backend-roomsheduler.onrender.com/free_slots/', 
-      const response = await axios.get('http://localhost:8000/free_slots/', 
+      const response = await axios.get('https://backend-roomsheduler.onrender.com/free_slots/', 
+      // const response = await axios.get('http://localhost:8000/free_slots/', 
 
       {
         params: { name_group: filters.value.name_group }
@@ -437,8 +437,8 @@ const fetchData = async () => {
       Object.entries(filters.value).forEach(([key, value]) => {
         if (value !== null && value !== '') params[key] = value;
       });
-      const response = await axios.get('http://localhost:8000/days/', { params });
-      // const response = await axios.get('https://backend-roomsheduler.onrender.com/days/', { params });
+      // const response = await axios.get('http://localhost:8000/days/', { params });
+      const response = await axios.get('https://backend-roomsheduler.onrender.com/days/', { params });
       scheduleData.value = response.data;
       showFreeScheduleGrid.value = false;
     }
