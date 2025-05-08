@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import days
+from routers import days, rooms
 
 app = FastAPI()
 
@@ -14,6 +14,7 @@ app.add_middleware(
 
 # Підключення роутера
 app.include_router(days.router)
+app.include_router(rooms.router)
 
 if __name__ == "__main__":
     import uvicorn

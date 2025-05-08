@@ -94,15 +94,20 @@
             @focus="showSuggestions = true"
             @blur="handleBlur"
           />
-          <div v-if="showSuggestions && filteredRooms.length > 0" class="suggestions-list">
-            <div 
-              v-for="room in filteredRooms" 
-              :key="room"
-              class="suggestion-item"
-              @mousedown="selectRoom(room)"
-            >
-              {{ room }}
+          <div v-if="showSuggestions && (filteredRooms.length > 0 || isFetchingRooms)" class="suggestions-list">
+            <div v-if="isFetchingRooms" class="suggestion-item loading">
+              Завантаження...
             </div>
+            <template v-else>
+              <div 
+                v-for="room in filteredRooms" 
+                :key="room"
+                class="suggestion-item"
+                @mousedown="selectRoom(room)"
+              >
+                {{ room }}
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -463,19 +468,41 @@ onMounted(fetchData)
 // Add these after roomSuggestions ref
 const showSuggestions = ref(false)
 const filteredRooms = ref([])
+const isFetchingRooms = ref(false)
 
-const handleRoomInput = () => {
-  const input = filters.value.room.toLowerCase()
-  filteredRooms.value = roomSuggestions.value.filter(room => 
-    room.toLowerCase().includes(input)
-  )
+const handleRoomInput = async () => {
+  const input = filters.value.room
   showSuggestions.value = true
-  debounceFetch()
+  
+  try {
+    isFetchingRooms.value = true
+    // Create params object with all current filters
+    const params = {
+      query: input,
+      ...Object.fromEntries(
+        Object.entries(filters.value)
+          .filter(([key, value]) => 
+            value !== null && 
+            value !== '' && 
+            key !== 'room' // Exclude the room filter itself
+          )
+      )
+    }
+    
+    const response = await axios.get('https://backend-roomsheduler.onrender.com/room_suggestions/', { params })
+    filteredRooms.value = response.data
+  } catch (err) {
+    console.error('Error fetching room suggestions:', err)
+    filteredRooms.value = []
+  } finally {
+    isFetchingRooms.value = false
+  }
 }
 
 const selectRoom = (room) => {
   filters.value.room = room
   showSuggestions.value = false
+  debounceFetch() // Fetch schedule data after selecting a room
 }
 
 const handleBlur = () => {
@@ -827,5 +854,15 @@ const handleBlur = () => {
 
 .suggestion-item:hover {
   background-color: #f0f4f8;
+}
+
+.suggestion-item.loading {
+  color: #666;
+  font-style: italic;
+  cursor: default;
+}
+
+.suggestion-item.loading:hover {
+  background-color: transparent;
 }
 </style>
