@@ -1,12 +1,12 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, PrimaryKeyConstraint
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
 class Days(Base):
-    __tablename__ = "schedule"
+    __tablename__ = "days_3"
 
-    name_group = Column(String, primary_key=True)
+    name_group = Column(String)
     number_of_subgroup = Column(Integer)
     day_of_week = Column(String)
     nominator = Column(String)
@@ -16,3 +16,7 @@ class Days(Base):
     room = Column(String)
     teacher = Column(String)
     busy = Column(Boolean)
+
+    __table_args__ = (
+        PrimaryKeyConstraint('name_group', 'day_of_week', 'namb_of_para', 'number_of_subgroup'),
+    )

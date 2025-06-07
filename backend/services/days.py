@@ -2,6 +2,10 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from models.models import Days
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def fetch_days_by_filters(
     db: Session,
@@ -17,6 +21,8 @@ def fetch_days_by_filters(
     busy: bool | None,
 ):
     query = db.query(Days)
+    
+    logger.info(f"Filtering with name_group: {name_group}")
 
     if name_group:
         query = query.filter(Days.name_group == name_group)
@@ -38,11 +44,14 @@ def fetch_days_by_filters(
         query = query.filter(Days.busy == busy)
 
     results = query.all()
+    logger.info(f"Found {len(results)} results")
+    
     result_list = [{
         column.name: getattr(row, column.name)
         for column in row.__table__.columns
     } for row in results]
 
+    logger.info(f"Returning {len(result_list)} items")
     return JSONResponse(content=result_list)
 
 

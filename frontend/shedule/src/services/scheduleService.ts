@@ -8,7 +8,9 @@ class ScheduleService {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== null && value !== '') params[key] = value;
     });
+    console.log('Sending request with params:', params);
     const response: AxiosResponse<ScheduleItem[]> = await httpClient.get('/days/', { params });
+    console.log('Received data:', response.data);
     return response.data;
   }
 

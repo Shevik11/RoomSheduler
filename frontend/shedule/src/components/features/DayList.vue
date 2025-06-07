@@ -97,54 +97,12 @@ const fetchData = async () => {
       const data = await fetchFreeSlots(filters.value.name_group);
       scheduleData.value = data;
       showFreeScheduleGrid.value = true;
-    } else if (filters.value.busy === null && filters.value.room) {
-      const data = await fetchRoomSchedule(filters.value.room);
-      if (data) {
-        roomScheduleData.value = data;
-        // Створюємо scheduleData для всіх періодів
-        const allPeriodsData: ScheduleItem[] = [];
-        for (const day in data) {
-          data[day].forEach(para => {
-            if (para.status === 'Зайнято') {
-              allPeriodsData.push({
-                day_of_week: day,
-                namb_of_para: para.para,
-                time_of_para: para.time,
-                name_of_para: para.subject || 'Зайнято',
-                room: filters.value.room,
-                teacher: para.teacher || '',
-                number_of_subgroup: null,
-                nominator: null,
-                busy: true,
-                name_group: Array.isArray(para.group) ? para.group.join(', ') : para.group || '',
-                key: `${day}-${para.para}-${para.subject}-${filters.value.room}`,
-                groups: Array.isArray(para.group) ? para.group : [para.group || '']
-              });
-            } else {
-              allPeriodsData.push({
-                day_of_week: day,
-                namb_of_para: para.para,
-                time_of_para: para.time,
-                name_of_para: 'Вільно',
-                room: filters.value.room,
-                teacher: '',
-                number_of_subgroup: null,
-                nominator: null,
-                busy: false,
-                name_group: '',
-                key: `${day}-${para.para}-Вільно-${filters.value.room}`,
-                groups: []
-              });
-            }
-          });
-        }
-        scheduleData.value = allPeriodsData;
-        showFreeScheduleGrid.value = false;
-      }
     } else {
       const data = await fetchSchedule(filters.value);
-      scheduleData.value = data;
-      showFreeScheduleGrid.value = false;
+      if (data) {
+        scheduleData.value = data;
+        showFreeScheduleGrid.value = false;
+      }
     }
   } catch (err) {
     console.error('Error fetching data:', err);
