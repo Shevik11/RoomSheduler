@@ -1,24 +1,28 @@
 <script setup>
 // Імпортуємо необхідні компоненти
 import { RouterView } from 'vue-router'
+import { BaseLayout } from './components/layout'
 </script>
 
 <template>
-  <div id="app">
-    <!-- Основне меню (можна додати за потреби) -->
-    <nav v-if="$route.path !== '/'" class="main-nav">
-      <router-link to="/">До списку днів</router-link>
-    </nav>
+  <BaseLayout>
+    <template #header>
+      <nav v-if="$route.path !== '/'" class="main-nav">
+        <router-link to="/">До списку днів</router-link>
+      </nav>
+    </template>
 
-    <!-- Контейнер для контенту -->
-    <main class="app-content">
-      <RouterView />
-    </main>
-  </div>
+    <RouterView />
+
+    <template #footer>
+      <div class="footer-content">
+        <p>&copy; 2024 RoomScheduler. Всі права захищені.</p>
+      </div>
+    </template>
+  </BaseLayout>
 </template>
 
 <style>
-/* Глобальні стилі */
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
@@ -35,8 +39,7 @@ body {
 
 .main-nav {
   padding: 1rem 0;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1rem;
 }
 
 .main-nav a {
@@ -53,6 +56,11 @@ body {
   padding: 20px;
   background: #f9f9f9;
   border-radius: 8px;
+}
+
+.footer-content {
+  text-align: center;
+  color: #666;
 }
 
 /* Анімація для переходів між сторінками */
