@@ -17,15 +17,21 @@
     <p>{{ error }}</p>
   </div>
 
+  <!-- Повідомлення про відсутність фільтрів -->
+  <div v-if="!loading && !error && !hasSelectedFilters" class="no-data">
+    <i class="no-data-icon">🔍</i>
+    <p>Виберіть фільтр для відображення розкладу</p>
+  </div>
+
   <!-- Повідомлення про відсутність даних -->
-  <div v-if="!loading && !error && !hasData" class="no-data">
+  <div v-if="!loading && !error && hasSelectedFilters && !hasData" class="no-data">
     <i class="no-data-icon">📭</i>
     <p>Немає даних, що відповідають заданим фільтрам</p>
   </div>
 
   <!-- Відображення розкладу -->
   <ScheduleDisplay
-    v-if="!loading && !error && hasData"
+    v-if="!loading && !error && hasSelectedFilters && hasData"
     :schedule-data="scheduleData"
     :show-free-schedule-grid="showFreeScheduleGrid"
   />
@@ -59,6 +65,20 @@ const { loading, error, fetchSchedule, fetchRoomSchedule, fetchFreeSlots } = use
 // Перевіряємо наявність даних
 const hasData = computed(() => {
   return scheduleData.value.length > 0 || (roomScheduleData.value && Object.keys(roomScheduleData.value).length > 0);
+});
+
+// Перевіряємо чи вибрані якісь фільтри
+const hasSelectedFilters = computed(() => {
+  const f = filters.value;
+  return f.name_group !== '' || 
+         f.number_of_subgroup !== null || 
+         f.day_of_week !== null || 
+         f.nominator !== null || 
+         f.namb_of_para !== null || 
+         f.name_of_para !== '' || 
+         f.room !== '' || 
+         f.teacher !== '' || 
+         f.busy !== null;
 });
 
 // Завантаження даних
