@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Query, Depends
-from typing import Optional, List
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from models.models import Days
 from dependencies.database import get_db
-from sqlalchemy import text, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import JSONResponse
+from typing import List
 
 router = APIRouter(
     prefix="/teachers",
@@ -10,68 +11,38 @@ router = APIRouter(
 )
 
 @router.get("/suggestions/", response_model=List[str])
-async def get_teacher_suggestions(
+def get_teacher_suggestions(
     query: str = Query(None, description="Search query for teacher name"),
-    name_group: Optional[str] = None,
-    number_of_subgroup: Optional[int] = None,
-    day_of_week: Optional[str] = None,
-    nominator: Optional[str] = None,
-    number_of_para: Optional[int] = None,
-    name_of_para: Optional[str] = None,
-    room: Optional[str] = None,
-    busy: Optional[bool] = None,
-    db: AsyncSession = Depends(get_db)
+    name_group: str | None = None,
+    number_of_subgroup: int | None = None,
+    day_of_week: str | None = None,
+    nominator: str | None = None,
+    namb_of_para: int | None = None,
+    name_of_para: str | None = None,
+    room: str | None = None,
+    busy: bool | None = None,
+    db: Session = Depends(get_db),
 ):
-    # Build your base query
-    base_query = """
-        SELECT DISTINCT teacher 
-        FROM schedule 
-        WHERE 1=1
-    """
-    params = {}
-    
-    # Add filters based on provided parameters
+    db_query = db.query(Days.teacher).distinct()
+
     if query:
-        base_query += " AND teacher ILIKE :query"
-        params["query"] = f"%{query}%"
-    
+        db_query = db_query.filter(Days.teacher.ilike(f"%{query}%"))
     if name_group:
-        base_query += " AND name_group = :name_group"
-        params["name_group"] = name_group
-    
-    if number_of_subgroup is not None:
-        base_query += " AND number_of_subgroup = :number_of_subgroup"
-        params["number_of_subgroup"] = number_of_subgroup
-    
+        db_query = db_query.filter(Days.name_group == name_group)
+    if number_of_subgroup:
+        db_query = db_query.filter(Days.number_of_subgroup == number_of_subgroup)
     if day_of_week:
-        base_query += " AND day_of_week = :day_of_week"
-        params["day_of_week"] = day_of_week
-    
+        db_query = db_query.filter(Days.day_of_week == day_of_week)
     if nominator:
-        base_query += " AND nominator = :nominator"
-        params["nominator"] = nominator
-    
-    if number_of_para is not None:
-        base_query += " AND number_of_para = :number_of_para"
-        params["number_of_para"] = number_of_para
-    
+        db_query = db_query.filter(Days.nominator == nominator)
+    if namb_of_para:
+        db_query = db_query.filter(Days.namb_of_para == namb_of_para)
     if name_of_para:
-        base_query += " AND name_of_para ILIKE :name_of_para"
-        params["name_of_para"] = f"%{name_of_para}%"
-    
+        db_query = db_query.filter(Days.name_of_para.ilike(f"%{name_of_para}%"))
     if room:
-        base_query += " AND room ILIKE :room"
-        params["room"] = f"%{room}%"
-    
+        db_query = db_query.filter(Days.room == room)
     if busy is not None:
-        base_query += " AND busy = :busy"
-        params["busy"] = busy
-    
-    # Add order by to sort results
-    base_query += " ORDER BY teacher"
-    
-    # Execute query and return results
-    stmt = text(base_query)
-    result = db.execute(stmt, params)
-    rows = result.all()
-    return [row[0] for row in rows] 
+        db_query = db_query.filter(Days.busy == busy)
+
+    teachers = [teacher[0] for teacher in db_query.all() if teacher[0]]
+    return teachers 

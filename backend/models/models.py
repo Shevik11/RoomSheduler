@@ -4,7 +4,7 @@ from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
 class Days(Base):
-    __tablename__ = "schedule"
+    __tablename__ = "days_2"
 
     name_group = Column(String, primary_key=True)
     number_of_subgroup = Column(Integer)

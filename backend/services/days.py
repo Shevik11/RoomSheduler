@@ -1,9 +1,7 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from models.models import Days
-from shemas.day import Days
 
 def fetch_days_by_filters(
     db: Session,
@@ -18,55 +16,39 @@ def fetch_days_by_filters(
     teacher: str | None,
     busy: bool | None,
 ):
-    sql_query = "SELECT * FROM schedule WHERE 1=1"
-    params = {}
+    query = db.query(Days)
 
     if name_group:
-        sql_query += " AND name_group = :name_group"
-        params["name_group"] = name_group
+        query = query.filter(Days.name_group == name_group)
     if number_of_subgroup:
-        sql_query += " AND number_of_subgroup = :number_of_subgroup"
-        params["number_of_subgroup"] = number_of_subgroup
+        query = query.filter(Days.number_of_subgroup == number_of_subgroup)
     if day_of_week:
-        sql_query += " AND day_of_week = :day_of_week"
-        params["day_of_week"] = day_of_week
+        query = query.filter(Days.day_of_week == day_of_week)
     if nominator:
-        sql_query += " AND nominator = :nominator"
-        params["nominator"] = nominator
+        query = query.filter(Days.nominator == nominator)
     if namb_of_para:
-        sql_query += " AND namb_of_para = :namb_of_para"
-        params["namb_of_para"] = namb_of_para
+        query = query.filter(Days.namb_of_para == namb_of_para)
     if name_of_para:
-        sql_query += " AND name_of_para ILIKE :name_of_para"
-        params["name_of_para"] = f"%{name_of_para}%"
+        query = query.filter(Days.name_of_para.ilike(f"%{name_of_para}%"))
     if room:
-        sql_query += " AND room = :room"
-        params["room"] = room
+        query = query.filter(Days.room == room)
     if teacher:
-        sql_query += " AND teacher ILIKE :teacher"
-        params["teacher"] = f"%{teacher}%"
+        query = query.filter(Days.teacher.ilike(f"%{teacher}%"))
     if busy is not None:
-        sql_query += " AND busy = :busy"
-        params["busy"] = busy
+        query = query.filter(Days.busy == busy)
 
-    result = db.execute(text(sql_query), params)
-    rows = result.fetchall()
-    column_names = result.keys()
-
-    result_list = []
-    for row in rows:
-        row_dict = {}
-        for i, column in enumerate(column_names):
-            row_dict[column] = row[i]
-        result_list.append(row_dict)
+    results = query.all()
+    result_list = [{
+        column.name: getattr(row, column.name)
+        for column in row.__table__.columns
+    } for row in results]
 
     return JSONResponse(content=result_list)
 
 
 def fetch_room_schedule(room: str, db: Session):
     try:
-        query = text("SELECT * FROM schedule WHERE room = :room")
-        room_schedule = db.execute(query, {"room": room.strip()}).fetchall()
+        room_schedule = db.query(Days).filter(Days.room == room.strip()).all()
 
         days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "Пятниця"]
         paras = range(1, 9)
