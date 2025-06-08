@@ -263,28 +263,28 @@ const handleGroupInputWrapper = (event: Event) => {
   const input = (event.target as HTMLInputElement).value;
   filters.value.name_group = input;
   handleGroupInput(input, filters.value);
-  emit('update:modelValue', { ...filters.value });
+  showGroupSuggestions.value = true;
 };
 
 const handleSubjectInputWrapper = (event: Event) => {
   const input = (event.target as HTMLInputElement).value;
   filters.value.name_of_para = input;
   handleSubjectInput(input, filters.value);
-  emit('update:modelValue', { ...filters.value });
+  showSubjectSuggestions.value = true;
 };
 
 const handleRoomInputWrapper = (event: Event) => {
   const input = (event.target as HTMLInputElement).value;
   filters.value.room = input;
   handleRoomInput(input, filters.value);
-  emit('update:modelValue', { ...filters.value });
+  showRoomSuggestions.value = true;
 };
 
 const handleTeacherInputWrapper = (event: Event) => {
   const input = (event.target as HTMLInputElement).value;
   filters.value.teacher = input;
   handleTeacherInput(input, filters.value);
-  emit('update:modelValue', { ...filters.value });
+  showTeacherSuggestions.value = true;
 };
 
 // Обробники вибору

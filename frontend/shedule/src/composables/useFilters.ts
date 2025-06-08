@@ -2,6 +2,17 @@ import { ref } from 'vue';
 import scheduleService from '../services/scheduleService';
 import type { ScheduleFilters } from '../types/schedule';
 
+// Cache interface
+interface Cache {
+  [key: string]: {
+    data: string[];
+    timestamp: number;
+  };
+}
+
+// Cache expiration time (5 minutes)
+const CACHE_EXPIRATION = 5 * 60 * 1000;
+
 export function useFilters() {
   const showGroupSuggestions = ref(false);
   const filteredGroups = ref<string[]>([]);
@@ -19,56 +30,112 @@ export function useFilters() {
   const filteredTeachers = ref<string[]>([]);
   const isFetchingTeachers = ref(false);
 
-  const handleGroupInput = async (input: string, filters: ScheduleFilters) => {
+  // Store all available data
+  const allGroups = ref<string[]>([]);
+  const allSubjects = ref<string[]>([]);
+  const allRooms = ref<string[]>([]);
+  const allTeachers = ref<string[]>([]);
+
+  // Initialize caches
+  const groupCache: Cache = {};
+  const subjectCache: Cache = {};
+  const roomCache: Cache = {};
+  const teacherCache: Cache = {};
+
+  // Helper function to check if cache is valid
+  const isCacheValid = (cache: Cache, key: string): boolean => {
+    const cached = cache[key];
+    return cached && (Date.now() - cached.timestamp) < CACHE_EXPIRATION;
+  };
+
+  // Load all data on mount
+  const loadAllData = async () => {
     try {
-      isFetchingGroups.value = true;
+      // Load all groups
+      const groups = await scheduleService.getAllGroups();
+      allGroups.value = Array.isArray(groups) ? groups : [];
+
+      // Load all subjects
+      const subjects = await scheduleService.getAllSubjects();
+      allSubjects.value = Array.isArray(subjects) ? subjects : [];
+
+      // Load all rooms
+      const rooms = await scheduleService.getAllRooms();
+      allRooms.value = Array.isArray(rooms) ? rooms : [];
+
+      // Load all teachers
+      const teachers = await scheduleService.getAllTeachers();
+      allTeachers.value = Array.isArray(teachers) ? teachers : [];
+    } catch (err) {
+      console.error('Error loading initial data:', err);
+    }
+  };
+
+  // Load data immediately
+  loadAllData();
+
+  // Групи
+  const handleGroupInput = async (input: string, filters: ScheduleFilters) => {
+    if (!input) {
+      filteredGroups.value = [];
+      return;
+    }
+    isFetchingGroups.value = true;
+    try {
       const suggestions = await scheduleService.getGroupSuggestions(input);
       filteredGroups.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
-      console.error('Error fetching group suggestions:', err);
       filteredGroups.value = [];
     } finally {
       isFetchingGroups.value = false;
     }
   };
 
+  // Предмети
   const handleSubjectInput = async (input: string, filters: ScheduleFilters) => {
+    if (!input) {
+      filteredSubjects.value = [];
+      return;
+    }
+    isFetchingSubjects.value = true;
     try {
-      isFetchingSubjects.value = true;
       const suggestions = await scheduleService.getSubjectSuggestions(input, filters.name_group);
       filteredSubjects.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
-      console.error('Error fetching subject suggestions:', err);
       filteredSubjects.value = [];
     } finally {
       isFetchingSubjects.value = false;
     }
   };
 
+  // Аудиторії
   const handleRoomInput = async (input: string, filters: ScheduleFilters) => {
+    if (!input) {
+      filteredRooms.value = [];
+      return;
+    }
+    isFetchingRooms.value = true;
     try {
-      isFetchingRooms.value = true;
       const suggestions = await scheduleService.getRoomSuggestions(input, filters);
       filteredRooms.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
-      console.error('Error fetching room suggestions:', err);
       filteredRooms.value = [];
     } finally {
       isFetchingRooms.value = false;
     }
   };
 
+  // Викладачі
   const handleTeacherInput = async (input: string, filters: ScheduleFilters) => {
+    if (!input) {
+      filteredTeachers.value = [];
+      return;
+    }
+    isFetchingTeachers.value = true;
     try {
-      isFetchingTeachers.value = true;
-      const suggestions = await scheduleService.getTeacherSuggestions(
-        input,
-        filters.name_group,
-        filters.name_of_para
-      );
+      const suggestions = await scheduleService.getTeacherSuggestions(input, filters.name_group, filters.name_of_para);
       filteredTeachers.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
-      console.error('Error fetching teacher suggestions:', err);
       filteredTeachers.value = [];
     } finally {
       isFetchingTeachers.value = false;

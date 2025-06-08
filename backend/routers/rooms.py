@@ -10,42 +10,29 @@ router = APIRouter(
     tags=["rooms"]
 )
 
-@router.get("/suggestions/", response_model=List[str])
+@router.get('/suggestions/')
 def get_room_suggestions(
-    query: str = Query(None, description="Search query for room number"),
-    name_group: str | None = None,
-    number_of_subgroup: int | None = None,
-    day_of_week: str | None = None,
-    nominator: str | None = None,
-    namb_of_para: int | None = None,
-    name_of_para: str | None = None,
-    teacher: str | None = None,
-    busy: bool | None = None,
-    db: Session = Depends(get_db),
+    query: str = '',
+    name_group: str = None,
+    day_of_week: str = None,
+    nominator: str = None,
+    namb_of_para: int = None,
+    db: Session = Depends(get_db)
 ):
-    db_query = db.query(Days.room).distinct()
-
+    q = db.query(Days.room).filter(Days.room != '')
     if query:
-        db_query = db_query.filter(Days.room.ilike(f"%{query}%"))
+        q = q.filter(Days.room.ilike(f'%{query}%'))
     if name_group:
-        db_query = db_query.filter(Days.name_group == name_group)
-    if number_of_subgroup:
-        db_query = db_query.filter(Days.number_of_subgroup == number_of_subgroup)
+        q = q.filter(Days.name_group == name_group)
     if day_of_week:
-        db_query = db_query.filter(Days.day_of_week == day_of_week)
+        q = q.filter(Days.day_of_week == day_of_week)
     if nominator:
-        db_query = db_query.filter(Days.nominator == nominator)
+        q = q.filter(Days.nominator == nominator)
     if namb_of_para:
-        db_query = db_query.filter(Days.namb_of_para == namb_of_para)
-    if name_of_para:
-        db_query = db_query.filter(Days.name_of_para.ilike(f"%{name_of_para}%"))
-    if teacher:
-        db_query = db_query.filter(Days.teacher.ilike(f"%{teacher}%"))
-    if busy is not None:
-        db_query = db_query.filter(Days.busy == busy)
+        q = q.filter(Days.namb_of_para == namb_of_para)
+    rooms = q.distinct().all()
+    return [room[0] for room in rooms]
 
-    rooms = [room[0] for room in db_query.all() if room[0]]
-    return rooms
 
 @router.get("/all_rooms/")
 def get_all_rooms(db: Session = Depends(get_db)):

@@ -64,6 +64,26 @@ class ScheduleService {
     const response = await httpClient.get('/teachers/suggestions/', { params });
     return response.data;
   }
+
+  async getAllGroups(): Promise<string[]> {
+    const response = await httpClient.get('/groups/all/');
+    return response.data;
+  }
+
+  async getAllSubjects(): Promise<string[]> {
+    const response = await httpClient.get('/lessons/all/');
+    return response.data;
+  }
+
+  async getAllRooms(): Promise<string[]> {
+    const response = await httpClient.get('/rooms/all/');
+    return response.data;
+  }
+
+  async getAllTeachers(): Promise<string[]> {
+    const response = await httpClient.get('/teachers/all/');
+    return response.data;
+  }
 }
 
 export default new ScheduleService(); 

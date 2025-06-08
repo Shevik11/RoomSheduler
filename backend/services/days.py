@@ -59,7 +59,7 @@ def fetch_room_schedule(room: str, db: Session):
     try:
         room_schedule = db.query(Days).filter(Days.room == room.strip()).all()
 
-        days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "Пятниця"]
+        days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця"]
         paras = range(1, 9)
         para_times = {
             1: '8:30-10:05', 2: '10:25-12:00', 3: '12:20-13:55', 4: '14:15-15:50',
