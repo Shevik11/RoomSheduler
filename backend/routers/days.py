@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from models.models import Days
-from services.days import fetch_days_by_filters, fetch_room_schedule
+from services.days import fetch_days_by_filters
 from dependencies.database import get_db
 from fastapi.responses import JSONResponse
-from sqlalchemy import distinct
 
 router = APIRouter()
 
@@ -18,26 +17,6 @@ def get_all_days(db: Session = Depends(get_db)):
             del day_dict["_sa_instance_state"]
         result_list.append(day_dict)
     return JSONResponse(content=result_list)
-
-@router.get('/groups/all/')
-def get_all_groups(db: Session = Depends(get_db)):
-    groups = db.query(distinct(Days.name_group)).filter(Days.name_group != '').all()
-    return [group[0] for group in groups]
-
-@router.get('/lessons/all/')
-def get_all_subjects(db: Session = Depends(get_db)):
-    subjects = db.query(distinct(Days.name_of_para)).filter(Days.name_of_para != '').all()
-    return [subject[0] for subject in subjects]
-
-@router.get('/rooms/all/')
-def get_all_rooms(db: Session = Depends(get_db)):
-    rooms = db.query(distinct(Days.room)).filter(Days.room != '').all()
-    return [room[0] for room in rooms]
-
-@router.get('/teachers/all/')
-def get_all_teachers(db: Session = Depends(get_db)):
-    teachers = db.query(distinct(Days.teacher)).filter(Days.teacher != '').all()
-    return [teacher[0] for teacher in teachers]
 
 @router.get("/days/")
 def get_days(
@@ -68,9 +47,4 @@ def get_days(
     )
 
 
-@router.get("/room_schedule/")
-def get_room_schedule(
-    room: str = Query(..., description="Номер аудиторії (наприклад: '1/Б')"),
-    db: Session = Depends(get_db)
-):
-    return fetch_room_schedule(room, db)
+

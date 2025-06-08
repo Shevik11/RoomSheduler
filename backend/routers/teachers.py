@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from models.models import Days
 from dependencies.database import get_db
-from fastapi.responses import JSONResponse
 from typing import List
+from sqlalchemy import distinct
 
 router = APIRouter(
     prefix="/teachers",
@@ -46,3 +46,9 @@ def get_teacher_suggestions(
 
     teachers = [teacher[0] for teacher in db_query.all() if teacher[0]]
     return teachers 
+
+
+@router.get('/all/')
+def get_all_teachers(db: Session = Depends(get_db)):
+    teachers = db.query(distinct(Days.teacher)).filter(Days.teacher != '').all()
+    return [teacher[0] for teacher in teachers]

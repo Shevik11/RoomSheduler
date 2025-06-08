@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from models.models import Days
 from dependencies.database import get_db
-from fastapi.responses import JSONResponse
 from typing import List
+from sqlalchemy import distinct
 
 router = APIRouter(
     prefix="/groups",
@@ -46,3 +46,9 @@ def get_group_suggestions(
 
     groups = [group[0] for group in db_query.all() if group[0]]
     return groups 
+
+
+@router.get('/all/')
+def get_all_groups(db: Session = Depends(get_db)):
+    groups = db.query(distinct(Days.name_group)).filter(Days.name_group != '').all()
+    return [group[0] for group in groups]

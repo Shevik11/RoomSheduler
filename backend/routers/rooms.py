@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from models.models import Days
 from dependencies.database import get_db
 from fastapi.responses import JSONResponse
 from typing import List
+from services.days import fetch_room_schedule
+
 
 router = APIRouter(
     prefix="/rooms",
@@ -70,3 +72,11 @@ def get_busy_rooms(
 
     rooms = [room[0] for room in query.all() if room[0]]
     return JSONResponse(content=rooms)
+
+
+@router.get("/schedule/")
+def get_room_schedule(
+    room: str = Query(..., description="Номер аудиторії (наприклад: '1/Б')"),
+    db: Session = Depends(get_db)
+):
+    return fetch_room_schedule(room, db)
