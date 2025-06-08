@@ -10,7 +10,6 @@ const router = createRouter({
       name: 'home',
       component: DaysList
     }
-    // Додамо інші маршрути за потреби
   ]
 })
 

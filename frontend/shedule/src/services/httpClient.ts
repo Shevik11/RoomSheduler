@@ -9,11 +9,9 @@ const httpClient: AxiosInstance = axios.create({
   },
 });
 
-// Інтерсептор для обробки помилок
 httpClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
-    // Тут можна додати глобальну обробку помилок
     console.error('API Error:', error);
     return Promise.reject(error);
   }

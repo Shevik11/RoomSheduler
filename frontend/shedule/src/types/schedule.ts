@@ -11,7 +11,6 @@ export interface ScheduleFilters {
 }
 
 export interface ScheduleItem {
-  key: string;
   day_of_week: string;
   namb_of_para: number;
   time_of_para: string;
@@ -22,18 +21,14 @@ export interface ScheduleItem {
   nominator: string | null;
   busy: boolean;
   name_group: string;
+  key: string;
   groups: string[];
 }
 
-export interface RoomScheduleItem {
-  para: number;
-  time: string;
-  status: 'Вільно' | 'Зайнято';
-  subject?: string;
-  group?: string | string[];
-  teacher?: string;
-}
-
 export interface RoomSchedule {
-  [day: string]: RoomScheduleItem[];
+  [day: string]: {
+    para: number;
+    time: string;
+    status: string;
+  }[];
 } 

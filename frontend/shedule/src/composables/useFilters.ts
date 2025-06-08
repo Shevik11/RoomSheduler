@@ -42,7 +42,7 @@ export function useFilters() {
   const roomCache: Cache = {};
   const teacherCache: Cache = {};
 
-  // Helper function to check if cache is valid
+  // Check if cache is valid
   const isCacheValid = (cache: Cache, key: string): boolean => {
     const cached = cache[key];
     return cached && (Date.now() - cached.timestamp) < CACHE_EXPIRATION;

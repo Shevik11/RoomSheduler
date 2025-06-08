@@ -16,7 +16,7 @@ import { BaseLayout } from './components/layout'
 
     <template #footer>
       <div class="footer-content">
-        <p>&copy; 2024 RoomScheduler. Всі права захищені.</p>
+        <p>&copy; 2025 Dekanat Pro.</p>
       </div>
     </template>
   </BaseLayout>
