@@ -10,6 +10,15 @@ declare module 'vue' {
     BaseLayout: typeof import('./src/components/layout/BaseLayout.vue')['default']
     DateRangePicker: typeof import('./src/components/common/DateRangePicker.vue')['default']
     DayList: typeof import('./src/components/features/DayList.vue')['default']
+    FilterBusy: typeof import('./src/components/filters/FilterBusy.vue')['default']
+    FilterDayOfWeek: typeof import('./src/components/filters/FilterDayOfWeek.vue')['default']
+    FilterGroup: typeof import('./src/components/filters/FilterGroup.vue')['default']
+    FilterNominator: typeof import('./src/components/filters/FilterNominator.vue')['default']
+    FilterParaNumber: typeof import('./src/components/filters/FilterParaNumber.vue')['default']
+    FilterRoom: typeof import('./src/components/filters/FilterRoom.vue')['default']
+    FilterSubgroup: typeof import('./src/components/filters/FilterSubgroup.vue')['default']
+    FilterSubject: typeof import('./src/components/filters/FilterSubject.vue')['default']
+    FilterTeacher: typeof import('./src/components/filters/FilterTeacher.vue')['default']
     IconCommunity: typeof import('./src/components/icons/IconCommunity.vue')['default']
     IconDocumentation: typeof import('./src/components/icons/IconDocumentation.vue')['default']
     IconEcosystem: typeof import('./src/components/icons/IconEcosystem.vue')['default']
@@ -20,5 +29,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ScheduleDisplay: typeof import('./src/components/features/ScheduleDisplay.vue')['default']
     ScheduleFilters: typeof import('./src/components/features/ScheduleFilters.vue')['default']
+    WeekTypeDisplay: typeof import('./src/components/WeekTypeDisplay.vue')['default']
   }
 }
