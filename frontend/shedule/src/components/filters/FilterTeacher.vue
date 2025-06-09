@@ -1,155 +1,71 @@
 <template>
   <div class="filter-item">
-    <label for="teacher">Викладач:</label>
-    <div class="autocomplete-container">
-      <input 
-        id="teacher"
-        :value="modelValue"
-        @input="handleInput" 
-        placeholder="Введіть ім'я викладача"
-        class="filter-input"
-        @focus="showSuggestions = true"
-        @blur="handleBlur"
-        autocomplete="off"
-      />
-      <div v-if="showSuggestions" class="suggestions-list">
-        <div v-if="isFetching" class="suggestion-item loading">
-          Завантаження...
-        </div>
-        <template v-else>
-          <div v-if="filteredItems.length === 0" class="suggestion-item no-results">
-            Немає відповідних викладачів
-          </div>
-          <div 
-            v-for="item in filteredItems" 
-            :key="item"
-            class="suggestion-item"
-            @mousedown.prevent="selectItem(item)"
-          >
-            {{ item }}
-          </div>
-        </template>
-      </div>
-    </div>
+    <label for="name_teacher">Викладач:</label>
+    <AutocompleteInput
+      id="name_teacher"
+      v-model="teacherValue"
+      placeholder="Введіть ПІБ викладача"
+      :suggestions="suggestions"
+      :is-loading="isLoading"
+      no-results-text="Немає відповідних викладачів"
+      @input="handleInput"
+      @select="handleSelect"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import type { Ref } from 'vue';
+import AutocompleteInput from '../common/AutocompleteInput.vue';
+import scheduleService from '../../services/scheduleService';
 
 const props = defineProps<{
-  modelValue: string;
-  filteredItems: string[];
-  isFetching: boolean;
+  modelValue: string | null;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-  (e: 'input', value: string): void;
-  (e: 'select', value: string): void;
+  (e: 'update:modelValue', value: string | null): void;
 }>();
 
-const showSuggestions = ref(false);
+const teacherValue: Ref<string> = ref(props.modelValue || '');
+const suggestions: Ref<string[]> = ref([]);
+const isLoading: Ref<boolean> = ref(false);
 
-const handleInput = (event: Event) => {
-  const input = (event.target as HTMLInputElement).value;
-  emit('update:modelValue', input);
-  emit('input', input);
-  showSuggestions.value = true;
+watch(() => props.modelValue, (newValue: string | null) => {
+  teacherValue.value = newValue || '';
+});
+
+const handleInput = async (value: string) => {
+  if (!value) {
+    suggestions.value = [];
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    suggestions.value = await scheduleService.getTeacherSuggestions(value);
+  } catch (error) {
+    console.error('Error fetching teacher suggestions:', error);
+    suggestions.value = [];
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const selectItem = (item: string) => {
-  emit('update:modelValue', item);
-  emit('select', item);
-  showSuggestions.value = false;
-};
-
-const handleBlur = () => {
-  setTimeout(() => {
-    showSuggestions.value = false;
-  }, 200);
+const handleSelect = (value: string) => {
+  emit('update:modelValue', value);
 };
 </script>
 
 <style scoped>
 .filter-item {
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-  padding: 0 8px;
+  margin-bottom: 1rem;
 }
 
-.filter-item label {
-  margin-bottom: 5px;
+label {
+  display: block;
+  margin-bottom: 0.5rem;
   font-weight: 500;
-  font-size: 14px;
-  color: #505050;
-}
-
-.filter-input,
-.filter-select {
-  color: #222 !important;
-}
-
-.filter-input {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.filter-input:focus {
-  outline: none;
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-}
-
-.autocomplete-container {
-  position: relative;
-  width: 100%;
-}
-
-.suggestions-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  max-height: 200px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  z-index: 1000;
-}
-
-.suggestion-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.suggestion-item:hover {
-  background-color: #f0f4f8;
-}
-
-.suggestion-item.loading {
-  color: #666;
-  font-style: italic;
-  cursor: default;
-}
-
-.suggestion-item.loading:hover {
-  background-color: transparent;
-}
-
-.suggestion-item.no-results {
-  color: #666;
-  font-style: italic;
-  cursor: default;
-}
-
-.suggestion-item.no-results:hover {
-  background-color: transparent;
 }
 </style> 

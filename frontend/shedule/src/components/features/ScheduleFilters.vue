@@ -2,61 +2,88 @@
   <div class="filters-container">
     <h3>Фільтри розкладу</h3>
     <div class="filters">
-      <FilterGroup
-        v-model="filters.name_group"
-        :filtered-items="filteredGroups"
-        :is-fetching="isFetchingGroups"
-        @input="(value) => handleGroupInput(value, filters)"
-        @select="handleGroupSelect"
-      />
+      <FilterGroup v-model="filters.name_group" />
+      
+      <div class="filter-item">
+        <label for="number_of_subgroup">Підгрупа:</label>
+        <select 
+          id="number_of_subgroup"
+          v-model="filters.number_of_subgroup" 
+          class="filter-select"
+        >
+          <option :value="null">Всі підгрупи</option>
+          <option :value="1">1</option>
+          <option :value="2">2</option>
+        </select>
+      </div>
 
-      <FilterSubgroup
-        v-model="filters.number_of_subgroup"
-      />
+      <div class="filter-item">
+        <label for="day_of_week">День тижня:</label>
+        <select 
+          id="day_of_week"
+          v-model="filters.day_of_week" 
+          class="filter-select"
+        >
+          <option :value="null">Всі дні</option>
+          <option v-for="day in DAYS_OF_WEEK" :key="day" :value="day">{{ day }}</option>
+        </select>
+      </div>
 
-      <FilterDayOfWeek
-        v-model="filters.day_of_week"
-      />
+      <div class="filter-item">
+        <label for="nominator">Тип тижня:</label>
+        <select 
+          id="nominator"
+          v-model="filters.nominator" 
+          class="filter-select"
+        >
+          <option :value="null">Будь-який</option>
+          <option value="Чисельник">Чисельник</option>
+          <option value="Знаменник">Знаменник</option>
+        </select>
+      </div>
 
-      <FilterNominator
-        v-model="filters.nominator"
-      />
+      <div class="filter-item">
+        <label for="namb_of_para">Номер пари:</label>
+        <select 
+          id="namb_of_para"
+          v-model="filters.namb_of_para" 
+          class="filter-select"
+        >
+          <option :value="null">Всі пари</option>
+          <option v-for="n in 8" :key="n" :value="n">{{ n }}</option>
+        </select>
+      </div>
 
-      <FilterParaNumber
-        v-model="filters.namb_of_para"
-      />
-
-      <FilterSubject
+      <FilterSubject 
         v-model="filters.name_of_para"
-        :filtered-items="filteredSubjects"
-        :is-fetching="isFetchingSubjects"
-        @input="(value) => handleSubjectInput(value, filters)"
-        @select="selectSubject"
+        :group="filters.name_group"
       />
 
-      <FilterRoom
+      <FilterRoom 
         v-model="filters.room"
-        :filtered-items="filteredRooms"
-        :is-fetching="isFetchingRooms"
-        :group-name="filters.name_group"
-        @input="(value) => handleRoomInput(value, filters)"
-        @select="selectRoom"
+        :filters="filters"
       />
 
-      <FilterTeacher
+      <FilterTeacher 
         v-model="filters.teacher"
-        :filtered-items="filteredTeachers"
-        :is-fetching="isFetchingTeachers"
-        @input="(value) => handleTeacherInput(value, filters)"
-        @select="selectTeacher"
+        :group="filters.name_group"
+        :subject="filters.name_of_para"
       />
 
-      <FilterBusy
-        v-model="filters.busy"
-        @update:modelValue="handleBusyChange"
-      />
+      <div class="filter-item">
+        <label for="busy">Статус:</label>
+        <select 
+          id="busy"
+          v-model="filters.busy" 
+          class="filter-select"
+          @change="handleBusyChange"
+        >
+          <option :value="null">Всі</option>
+          <option :value="true">Зайняті</option>
+          <option :value="false">Вільні</option>
+        </select>
+      </div>
 
-      <!-- Button to reset filters -->
       <div class="filter-buttons">
         <button @click="resetFilters" class="reset-button">Скинути фільтри</button>
         <button @click="applyFilters" class="apply-button">Застосувати</button>
@@ -67,18 +94,12 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { DEFAULT_FILTERS } from '../../constants/schedule';
-import { useFilters } from '../../composables/useFilters';
-import type { ScheduleFilters } from '../../types/schedule';
+import { DAYS_OF_WEEK, DEFAULT_FILTERS } from '../../constants/schedule';
+import type { ScheduleFilters } from '../../types/schedule.ts';
 import FilterGroup from '../filters/FilterGroup.vue';
-import FilterSubgroup from '../filters/FilterSubgroup.vue';
-import FilterDayOfWeek from '../filters/FilterDayOfWeek.vue';
-import FilterNominator from '../filters/FilterNominator.vue';
-import FilterParaNumber from '../filters/FilterParaNumber.vue';
 import FilterSubject from '../filters/FilterSubject.vue';
-import FilterRoom from '../filters/FilterRoom.vue';
 import FilterTeacher from '../filters/FilterTeacher.vue';
-import FilterBusy from '../filters/FilterBusy.vue';
+import FilterRoom from '../filters/FilterRoom.vue';
 
 const props = defineProps<{
   modelValue: ScheduleFilters;
@@ -91,133 +112,95 @@ const emit = defineEmits<{
 
 const filters = ref<ScheduleFilters>({ ...props.modelValue });
 
-const {
-  filteredGroups,
-  isFetchingGroups,
-  filteredSubjects,
-  isFetchingSubjects,
-  filteredRooms,
-  isFetchingRooms,
-  filteredTeachers,
-  isFetchingTeachers,
-  handleGroupInput,
-  handleSubjectInput,
-  handleRoomInput,
-  handleTeacherInput
-} = useFilters();
-
-// Handlers for selection
-const handleGroupSelect = (group: string) => {
-  filters.value.name_group = group;
-  emit('update:modelValue', { ...filters.value });
-  emit('apply');
-};
-
-const selectSubject = (subject: string) => {
-  filters.value.name_of_para = subject;
-  emit('update:modelValue', { ...filters.value });
-  emit('apply');
-};
-
-const selectRoom = (room: string) => {
-  filters.value.room = room;
-  emit('update:modelValue', { ...filters.value });
-  emit('apply');
-};
-
-const selectTeacher = (teacher: string) => {
-  filters.value.teacher = teacher;
-  emit('update:modelValue', { ...filters.value });
-  emit('apply');
-};
-
-// Handler for change in occupation status
-const handleBusyChange = () => {
-  emit('update:modelValue', { ...filters.value });
-  emit('apply');
-};
-
-// Reset filters
-const resetFilters = () => {
-  filters.value = { ...DEFAULT_FILTERS };
-  emit('update:modelValue', { ...filters.value });
-  emit('apply');
-};
-
-// Apply filters
-const applyFilters = () => {
-  emit('update:modelValue', { ...filters.value });
-  emit('apply');
-};
-
-// Look for changes in the parent component
 watch(() => props.modelValue, (newValue) => {
   filters.value = { ...newValue };
-}, { deep: true });
+});
+
+const handleBusyChange = () => {
+  if (filters.value.busy === true) {
+    filters.value.room = '';
+  }
+};
+
+const resetFilters = () => {
+  filters.value = { ...DEFAULT_FILTERS };
+  emit('update:modelValue', filters.value);
+};
+
+const applyFilters = () => {
+  emit('update:modelValue', filters.value);
+  emit('apply');
+};
 </script>
 
 <style scoped>
 .filters-container {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f7f9fc;
+  padding: 1rem;
+  background-color: #f5f5f5;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+h3 {
+  margin-bottom: 1rem;
+  color: #333;
 }
 
 .filters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  align-items: flex-start;
+  gap: 1rem;
+}
+
+.filter-item {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
 }
 
 .filter-buttons {
+  grid-column: 1 / -1;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: stretch;
-  padding: 0 8px;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
 }
 
-.reset-button, .apply-button {
-  padding: 10px 16px;
+.reset-button,
+.apply-button {
+  padding: 8px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  font-size: 14px;
-  transition: background-color 0.2s;
-  width: 100%;
-  color: inherit;
-  text-align: center;
-  display: block;
 }
 
 .reset-button {
-  background-color: #e0e0e0;
-  color: #505050;
+  background-color: #f0f0f0;
+  color: #333;
 }
 
 .apply-button {
-  background-color: #4a90e2;
+  background-color: #4CAF50;
   color: white;
 }
 
 .reset-button:hover {
-  background-color: #d0d0d0;
+  background-color: #e0e0e0;
 }
 
 .apply-button:hover {
-  background-color: #3a80d2;
-}
-
-.filter-input,
-.filter-select {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #222 !important;
+  background-color: #45a049;
 }
 </style> 

@@ -18,7 +18,7 @@ import WeekTypeDisplay from './components/WeekTypeDisplay.vue'
 
     <template #footer>
       <div class="footer-content">
-        <p>&copy; 2025 RoomScheduler. Всі права захищені.</p>
+        <p>&copy; 2024 RoomScheduler. Всі права захищені.</p>
       </div>
     </template>
   </BaseLayout>
