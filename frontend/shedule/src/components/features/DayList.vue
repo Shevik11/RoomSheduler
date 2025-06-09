@@ -1,47 +1,40 @@
 <template>
-  <!-- Секція фільтрів -->
+  <!-- Filters section -->
   <ScheduleFiltersComponent
     v-model="filters"
     @apply="fetchData"
   />
 
-  <!-- Індикатор завантаження -->
+  <!-- Loading indicator -->
   <div v-if="loading" class="loading">
     <div class="spinner"></div>
     <p>Завантаження даних...</p>
   </div>
 
-  <!-- Повідомлення про помилку -->
+  <!-- Message about error -->
   <div v-if="error" class="error">
     <i class="error-icon">⚠️</i>
     <p>{{ error }}</p>
   </div>
 
-  <!-- Повідомлення про відсутність фільтрів -->
+  <!-- Message about missing filters -->
   <div v-if="!loading && !error && !hasSelectedFilters" class="no-data">
     <i class="no-data-icon">🔍</i>
     <p>Виберіть фільтр для відображення розкладу</p>
   </div>
 
-  <!-- Повідомлення про відсутність даних -->
+  <!-- Message about missing data -->
   <div v-if="!loading && !error && hasSelectedFilters && !hasData" class="no-data">
     <i class="no-data-icon">📭</i>
     <p>Немає даних, що відповідають заданим фільтрам</p>
   </div>
 
-  <!-- Відображення розкладу -->
+  <!-- Display schedule -->
   <ScheduleDisplay
     v-if="!loading && !error && hasSelectedFilters && hasData"
     :schedule-data="scheduleData"
     :show-free-schedule-grid="showFreeScheduleGrid"
   />
-
-  <!-- Блок для відображення розкладу аудиторії -->
-  <!-- <RoomScheduleDisplay
-    v-if="!loading && !error && roomScheduleData"
-    :room="filters.room"
-    :room-schedule-data="roomScheduleData"
-  /> -->
 </template>
 
 <script setup lang="ts">
@@ -51,23 +44,22 @@ import { useScheduleApi } from '../../composables/useScheduleApi';
 import type { ScheduleFilters, ScheduleItem, RoomSchedule } from '../../types/schedule';
 import ScheduleFiltersComponent from './ScheduleFilters.vue';
 import ScheduleDisplay from './ScheduleDisplay.vue';
-import RoomScheduleDisplay from './RoomScheduleDisplay.vue';
 
-// Стани
+// States
 const scheduleData = ref<ScheduleItem[]>([]);
 const showFreeScheduleGrid = ref(false);
 const roomScheduleData = ref<RoomSchedule | null>(null);
 const filters = ref<ScheduleFilters>({ ...DEFAULT_FILTERS });
 
-// Використовуємо composable для роботи з API
+// Use composable for API work
 const { loading, error, fetchSchedule, fetchRoomSchedule, fetchFreeSlots } = useScheduleApi();
 
-// Перевіряємо наявність даних
+// Check if there is any data
 const hasData = computed(() => {
   return scheduleData.value.length > 0 || (roomScheduleData.value && Object.keys(roomScheduleData.value).length > 0);
 });
 
-// Перевіряємо чи вибрані якісь фільтри
+// Check if any filters are selected
 const hasSelectedFilters = computed(() => {
   const f = filters.value;
   return f.name_group !== '' || 
@@ -81,14 +73,14 @@ const hasSelectedFilters = computed(() => {
          f.busy !== null;
 });
 
-// Завантаження даних
+// Load data
 const fetchData = async () => {
   try {
     if (filters.value.busy === false && filters.value.room) {
       const data = await fetchRoomSchedule(filters.value.room);
       if (data) {
         roomScheduleData.value = data;
-        // Створюємо scheduleData для вільних періодів
+        // Create scheduleData for free periods
         const freePeriodsData: ScheduleItem[] = [];
         for (const day in data) {
           data[day].forEach(para => {
@@ -131,24 +123,24 @@ const fetchData = async () => {
   }
 };
 
-// Слідкуємо за змінами фільтрів
+// Look for changes in filters
 watch(() => filters.value, (newVal) => {
-  // Якщо змінився статус на "Вільні" і є аудиторія або група
+  // If the status changed to "Free" and there is a room or group
   if (newVal.busy === false && (newVal.room || newVal.name_group)) {
     fetchData();
   }
-  // Якщо змінився статус на "Всі" і є аудиторія
+  // If the status changed to "All" and there is a room
   else if (newVal.busy === null && newVal.room) {
     fetchData();
   }
 }, { deep: true });
 
-// Слідкуємо за змінами room
+// Look for changes in room
 watch(() => filters.value.room, (newVal) => {
   if (newVal && filters.value.busy === false) fetchData();
 });
 
-// Завантажуємо дані при старті
+// Load data on start
 onMounted(fetchData);
 </script>
 
