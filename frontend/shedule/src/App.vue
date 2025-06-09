@@ -2,13 +2,11 @@
 // Імпортуємо необхідні компоненти
 import { RouterView } from 'vue-router'
 import { BaseLayout } from './components/layout'
-import WeekTypeDisplay from './components/WeekTypeDisplay.vue'
 </script>
 
 <template>
   <BaseLayout>
     <template #header>
-      <WeekTypeDisplay />
       <nav v-if="$route.path !== '/'" class="main-nav">
         <router-link to="/">До списку днів</router-link>
       </nav>
@@ -18,7 +16,7 @@ import WeekTypeDisplay from './components/WeekTypeDisplay.vue'
 
     <template #footer>
       <div class="footer-content">
-        <p>&copy; 2024 RoomScheduler. Всі права захищені.</p>
+        <p>&copy; 2025 Dekanat Pro.</p>
       </div>
     </template>
   </BaseLayout>
@@ -37,9 +35,6 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
 .main-nav {
@@ -61,14 +56,11 @@ body {
   padding: 20px;
   background: #f9f9f9;
   border-radius: 8px;
-  flex: 1;
 }
 
 .footer-content {
   text-align: center;
   color: #666;
-  padding: 1rem 0;
-  margin-top: auto;
 }
 
 /* Анімація для переходів між сторінками */
