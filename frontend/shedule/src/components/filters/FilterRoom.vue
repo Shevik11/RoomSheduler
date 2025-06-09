@@ -22,6 +22,17 @@ import scheduleService from '../../services/scheduleService';
 
 const props = defineProps<{
   modelValue: string | null;
+  filters: {
+    name_group: string;
+    number_of_subgroup: number | null;
+    day_of_week: string | null;
+    nominator: string | null;
+    namb_of_para: number | null;
+    name_of_para: string;
+    room: string;
+    teacher: string;
+    busy: boolean | null;
+  };
 }>();
 
 const emit = defineEmits<{
@@ -44,7 +55,7 @@ const handleInput = async (value: string) => {
 
   isLoading.value = true;
   try {
-    suggestions.value = await scheduleService.getRoomSuggestions(value);
+    suggestions.value = await scheduleService.getRoomSuggestions(value, props.filters);
   } catch (error) {
     console.error('Error fetching room suggestions:', error);
     suggestions.value = [];
