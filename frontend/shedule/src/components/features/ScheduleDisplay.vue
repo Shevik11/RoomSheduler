@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <!-- Сітка вільних пар -->
+      <!-- Free schedule grid -->
       <div v-if="showFreeScheduleGrid" class="free-schedule-grid">
         <div class="grid-header">
           <div class="grid-cell">Пара</div>
@@ -80,7 +80,7 @@ const props = defineProps<{
   showFreeScheduleGrid: boolean;
 }>();
 
-// Обчислене властивість для згрупованих даних розкладу
+// Calculated property for grouped schedule data
 const groupedScheduleData = computed(() => {
   const groups: { [key: string]: ScheduleItem } = {};
   props.scheduleData.forEach(item => {
@@ -98,19 +98,19 @@ const groupedScheduleData = computed(() => {
   return Object.values(groups);
 });
 
-// Перевіряємо наявність даних для дня
+// Check if there is data for the day
 const hasDayInSchedule = (day: string) => {
   if (props.showFreeScheduleGrid) return DAYS_OF_WEEK.includes(day);
   return groupedScheduleData.value.some(item => item.day_of_week === day);
 };
 
-// Фільтруємо розклад для дня
+// Filter schedule for the day
 const filterByDay = (day: string) => groupedScheduleData.value.filter(item => item.day_of_week === day);
 
-// Отримуємо час пари
+// Get the time of the para
 const getParaTime = (paraNumber: number) => PARA_TIMES[paraNumber] || 'Невідомо';
 
-// Перевіряємо, чи пара вільна
+// Check if the para is free
 const isParaFree = (day: string, paraNumber: number) => {
   const busyItems = props.scheduleData.filter(item => 
     item.day_of_week === day && item.namb_of_para === paraNumber && item.busy === true

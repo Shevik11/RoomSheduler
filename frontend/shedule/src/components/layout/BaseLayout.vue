@@ -1,19 +1,18 @@
 <template>
-  <div class="layout">
-    <header class="layout__header">
+  <div>
+    <header>
       <slot name="header"></slot>
     </header>
-    <main class="layout__main">
+    <main>
       <slot></slot>
     </main>
-    <footer class="layout__footer">
+    <footer>
       <slot name="footer"></slot>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-// Базовий layout компонент
 </script>
 
 <style scoped>
