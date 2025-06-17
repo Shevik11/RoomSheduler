@@ -60,12 +60,37 @@ const handleSelect = (value: string) => {
 
 <style scoped>
 .filter-item {
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 0 8px;
+  margin-bottom: 15px;
 }
 
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+.filter-item label {
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #e74c3c;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #2c3e50 !important;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.filter-select:focus {
+  outline: none;
+}
+
+.filter-input,
+.filter-select {
+  color: #2c3e50 !important;
 }
 </style> 

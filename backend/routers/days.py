@@ -7,17 +7,6 @@ from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
-@router.get('/all_days/')
-def get_all_days(db: Session = Depends(get_db)):
-    days = db.query(Days).all()
-    result_list = []
-    for day in days:
-        day_dict = day.__dict__.copy()
-        if "_sa_instance_state" in day_dict:
-            del day_dict["_sa_instance_state"]
-        result_list.append(day_dict)
-    return JSONResponse(content=result_list)
-
 @router.get("/days/")
 def get_days(
         name_group: str | None = Query(None),

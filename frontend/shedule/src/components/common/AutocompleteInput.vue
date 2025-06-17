@@ -9,6 +9,7 @@
       @focus="showSuggestions = true"
       @blur="handleBlur"
       autocomplete="off"
+      :class="{ 'has-value': hasValue }"
     />
     <div v-if="showSuggestions" class="suggestions-list">
       <div v-if="isLoading" class="suggestion-item loading">
@@ -32,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps<{
   id: string;
@@ -41,6 +42,7 @@ const props = defineProps<{
   suggestions: string[];
   isLoading: boolean;
   noResultsText: string;
+  hasValue?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -75,41 +77,63 @@ const selectItem = (item: string) => {
   emit('select', item);
   showSuggestions.value = false;
 };
+
+const hasValue = computed(() => !!inputValue.value);
 </script>
 
 <style scoped>
 .autocomplete-container {
   position: relative;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .filter-input {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #e74c3c;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #2c3e50;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-sizing: border-box;
+  height: 35px;
+}
+
+.filter-input:focus {
+  outline: none;
+}
+
+.filter-input.has-value {
+  border-color: #e57373;
+  box-shadow: 0 0 0 2px #e5737333;
 }
 
 .suggestions-list {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .suggestion-item {
-  padding: 8px;
+  padding: 8px 12px;
   cursor: pointer;
+  color: #2c3e50;
+  font-size: 14px;
 }
 
 .suggestion-item:hover {
-  background-color: #f0f0f0;
+  background-color: #f8f9fa;
 }
 
 .suggestion-item.loading,

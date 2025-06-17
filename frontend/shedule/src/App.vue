@@ -24,7 +24,7 @@ import WeekTypeDisplay from './components/WeekTypeDisplay.vue'
   </BaseLayout>
 </template>
 
-<style>
+<style >
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;

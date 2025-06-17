@@ -1,0 +1,68 @@
+/* dropdown-filter.css: спільні стилі для кастомних випадаючих списків у фільтрах */
+
+.select-wrapper {
+  position: relative;
+}
+
+.filter-select {
+  padding: 8px 2.5rem 8px 12px;
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #e74c3c;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #2c3e50 !important;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 68%;
+  right: 20px;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid #010101;
+  border-bottom: 1.5px solid #000000;
+  border-radius: 1px;
+  transform: translateY(-50%) rotate(45deg);
+  pointer-events: none;
+  transition: transform 0.15s;
+  background: white;
+  box-shadow: none;
+}
+
+.select-wrapper:hover::after {
+  transform: translateY(calc(-50% - 4px)) rotate(45deg) scale(1.25);
+  border-right: 1.5px solid #e57373;
+  border-bottom: 1.5px solid #e57373;
+}
+
+.filter-select:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px 0 rgba(44, 62, 80, 0.18), 0 1.5px 6px 0 rgba(44, 62, 80, 0.10);
+  border-color: #e57373;
+  box-shadow: 0 0 0 2px #e5737333, 0 6px 18px 0 rgba(44, 62, 80, 0.18), 0 1.5px 6px 0 rgba(44, 62, 80, 0.10);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #e57373;
+  box-shadow: 0 0 0 2px #e5737333;
+}
+
+.select-wrapper:focus-within::after {
+  border-right: 1.5px solid #e57373;
+  border-bottom: 1.5px solid #e57373;
+}
+
+.filter-input.has-value {
+  border-color: #e57373;
+  box-shadow: 0 0 0 2px #e5737333;
+} 

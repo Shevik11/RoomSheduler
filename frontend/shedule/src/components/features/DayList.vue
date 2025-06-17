@@ -5,12 +5,6 @@
     @apply="fetchData"
   />
 
-  <!-- Loading indicator -->
-  <div v-if="loading" class="loading">
-    <div class="spinner"></div>
-    <p>Завантаження даних...</p>
-  </div>
-
   <!-- Message about error -->
   <div v-if="error" class="error">
     <i class="error-icon">⚠️</i>
