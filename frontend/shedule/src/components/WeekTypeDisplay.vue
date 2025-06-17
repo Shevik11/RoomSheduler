@@ -1,13 +1,18 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import httpClient from '../services/httpClient'
+import { DateRangePicker } from '../components/common'
 
 const weekType = ref(null)
 const weekStart = ref(null)
 const weekEnd = ref(null)
 const isEditing = ref(false)
-const tempStart = ref('')
-const tempEnd = ref('')
+const tempStart = ref(null)
+const tempEnd = ref(null)
+const dateRange = ref({
+  start: '',
+  end: ''
+})
 
 onMounted(() => {
   console.log('onMounted WeekTypeDisplay');
@@ -109,12 +114,14 @@ const cancelEditing = () => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 0.8rem 1rem;
-  background-color: #fafbfc;
-  border-radius: 12px;
-  margin-bottom: 1rem;
+  padding: 1.2rem 1.5rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  margin: 1rem 0;
   font-size: 1rem;
   font-weight: 500;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  width: 100%;
 }
 
 .week-info {
@@ -124,28 +131,34 @@ const cancelEditing = () => {
 }
 
 .label {
-  color: #222;
-  font-weight: 500;
+  color: #2c3e50;
+  font-weight: 600;
   margin-right: 0.4rem;
   font-size: 1em;
 }
 
 .week-type-badge {
-  background: #fff;
-  color: #222;
-  border: 1px solid #e0e0e0;
-  border-radius: 14px;
+  background-color: #d32f2f;
+  color: #fff;
+  border: 1.5px solid #d32f2f;
+  border-radius: 6px;
   padding: 0.15em 0.8em;
-  font-weight: 600;
-  font-size: 1em;
+  font-size: 0.95rem;
+  font-weight: 500;
   margin-right: 0.7rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.week-type-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .week-dates {
-  color: #888;
+  color: #2c3e50;
   font-size: 0.95em;
-  font-weight: 400;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -153,44 +166,70 @@ const cancelEditing = () => {
 
 .dates-text {
   cursor: pointer;
-  padding: 0.2rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 6px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #d32f2f;
+  background: #fff;
 }
 
 .dates-text:hover {
-  background-color: #f0f0f0;
+  background-color: #f8f9fa;
+  border-color: #e74c3c;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .edit-icon, .cancel-icon {
   font-size: 0.9em;
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: pointer;
-  padding: 0.2rem;
-  border-radius: 4px;
+  padding: 0.3rem;
+  border-radius: 6px;
   transition: all 0.2s;
+  color: #2c3e50;
 }
 
 .edit-icon:hover, .cancel-icon:hover {
-  background-color: #f0f0f0;
-  opacity: 0.8;
+  background-color: #f8f9fa;
+  opacity: 1;
+  color: #e74c3c;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .separator {
-  color: #888;
+  color: #2c3e50;
   margin: 0 0.2rem;
+  font-weight: 500;
 }
 
 .date-input {
-  padding: 0.2rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 0.9em;
+  padding: 0.3rem 0.6rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.95em;
   width: 130px;
+  color: #2c3e50;
+  transition: all 0.2s;
+}
+
+.date-input:hover {
+  border-color: #e74c3c;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .date-input:focus {
   outline: none;
-  border-color: #999;
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
+}
+
+.filters {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
 }
 </style>

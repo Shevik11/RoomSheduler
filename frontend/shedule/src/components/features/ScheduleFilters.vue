@@ -86,10 +86,10 @@ const applyFilters = () => {
   background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  margin: 1rem;
+  margin: 1rem 0;
   width: 100%;
+  max-width: 1200px;
 }
-
 h3 {
   margin-bottom: 1.5rem;
   color: #1a1a1a;
@@ -97,14 +97,17 @@ h3 {
   font-weight: 600;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 0.75rem;
+  text-align: center; /* Center the heading text */
 }
 
 .filters {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
+  gap: 1.5rem;
   padding: 0.5rem;
   align-items: start;
+  justify-items: center;
+  width: 100%;
 }
 
 .filter-buttons {
@@ -114,14 +117,17 @@ h3 {
   grid-column: 5 / 6;
   grid-row: 2;
   justify-self: center;
-  align-self: start;
+  align-self: center;
   margin: 0;
   padding: 0;
   border: none;
+  width: 100%;
 }
 
 .filter-item {
   margin-bottom: 0.5rem;
+  width: 100%;
+  min-width: 200px;
 }
 
 label {
@@ -130,6 +136,7 @@ label {
   font-weight: 500;
   color: #374151;
   font-size: 0.95rem;
+  text-align: center; /* Center the label text */
 }
 
 .filter-select, select {
