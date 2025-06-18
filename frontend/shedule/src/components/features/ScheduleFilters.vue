@@ -13,7 +13,7 @@
       </div>
       <FilterSubject 
         v-model="filters.name_of_para"
-        :group="filters.name_group"
+        :filters="filters"
       />
       <FilterRoom 
         v-model="filters.room"
@@ -21,8 +21,7 @@
       />
       <FilterTeacher 
         v-model="filters.teacher"
-        :group="filters.name_group"
-        :subject="filters.name_of_para"
+        :filters="filters"
       />
       <FilterBusy 
         v-model="filters.busy"
@@ -50,6 +49,7 @@ import FilterSubgroup from '../filters/FilterSubgroup.vue';
 
 const props = defineProps<{
   modelValue: ScheduleFilters;
+  defaultNominator: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -63,14 +63,23 @@ watch(() => props.modelValue, (newValue) => {
   filters.value = { ...newValue };
 });
 
+// Завжди оновлюємо фільтр при зміні defaultNominator
+watch(() => props.defaultNominator, (newVal) => {
+  console.log('ScheduleFilters updating nominator to:', newVal);
+  filters.value.nominator = newVal;
+  emit('update:modelValue', filters.value);
+}, { immediate: true });
+
 const handleBusyChange = () => {
   if (filters.value.busy === true) {
     filters.value.room = '';
   }
 };
 
+// При скиданні фільтрів беремо поточне значення з WeekTypeDisplay
 const resetFilters = () => {
   filters.value = { ...DEFAULT_FILTERS };
+  filters.value.nominator = props.defaultNominator;
   emit('update:modelValue', filters.value);
 };
 

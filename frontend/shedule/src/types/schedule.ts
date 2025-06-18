@@ -1,4 +1,6 @@
 export interface ScheduleFilters {
+  subject: unknown;
+  group: unknown;
   name_group: string;
   number_of_subgroup: number | null;
   day_of_week: string | null;

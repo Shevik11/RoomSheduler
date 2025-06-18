@@ -4,6 +4,7 @@
     <AutocompleteInput
       id="name_teacher"
       v-model="teacherValue"
+      :filters="filters"
       placeholder="Введіть ПІБ викладача"
       :suggestions="suggestions"
       :is-loading="isLoading"
@@ -19,9 +20,11 @@ import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import AutocompleteInput from '../common/AutocompleteInput.vue';
 import scheduleService from '../../services/scheduleService';
+import type { ScheduleFilters } from '../../types/schedule';
 
 const props = defineProps<{
   modelValue: string | null;
+  filters: ScheduleFilters;
 }>();
 
 const emit = defineEmits<{
@@ -44,7 +47,7 @@ const handleInput = async (value: string) => {
 
   isLoading.value = true;
   try {
-    suggestions.value = await scheduleService.getTeacherSuggestions(value);
+    suggestions.value = await scheduleService.getTeacherSuggestions(value, props.filters);
   } catch (error) {
     console.error('Error fetching teacher suggestions:', error);
     suggestions.value = [];

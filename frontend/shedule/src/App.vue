@@ -3,18 +3,26 @@
 import { RouterView } from 'vue-router'
 import { BaseLayout } from './components/layout'
 import WeekTypeDisplay from './components/WeekTypeDisplay.vue'
+import { ref } from 'vue'
+
+const weekType = ref(null);
+
+const handleWeekTypeUpdate = (newType) => {
+  console.log('App received new week type:', newType);
+  weekType.value = newType;
+};
 </script>
 
 <template>
   <BaseLayout>
     <template #header>
-      <WeekTypeDisplay />
+      <WeekTypeDisplay @update:weekType="handleWeekTypeUpdate" />
       <nav v-if="$route.path !== '/'" class="main-nav">
         <router-link to="/">До списку днів</router-link>
       </nav>
     </template>
 
-    <RouterView />
+    <RouterView :default-nominator="weekType" />
 
     <template #footer>
       <div class="footer-content">

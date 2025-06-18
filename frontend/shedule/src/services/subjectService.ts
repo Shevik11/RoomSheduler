@@ -10,7 +10,7 @@ class SubjectService {
     const params: Record<string, string> = { query };
     if (group) params.group = group;
     
-    const response = await httpClient.get('/subjects/suggestions/', { params });
+    const response = await httpClient.get('/lessons/suggestions/', { params });
     return response.data;
   }
 }

@@ -2,6 +2,7 @@
   <!-- Filters section -->
   <ScheduleFiltersComponent
     v-model="filters"
+    :default-nominator="props.defaultNominator"
     @apply="fetchData"
   />
 
@@ -38,12 +39,18 @@ import { useScheduleApi } from '../../composables/useScheduleApi';
 import type { ScheduleFilters, ScheduleItem, RoomSchedule } from '../../types/schedule';
 import ScheduleFiltersComponent from './ScheduleFilters.vue';
 import ScheduleDisplay from './ScheduleDisplay.vue';
+import httpClient from '../../services/httpClient';
+
+const props = defineProps<{
+  defaultNominator: string | null;
+}>();
 
 // States
 const scheduleData = ref<ScheduleItem[]>([]);
 const showFreeScheduleGrid = ref(false);
 const roomScheduleData = ref<RoomSchedule | null>(null);
 const filters = ref<ScheduleFilters>({ ...DEFAULT_FILTERS });
+const weekType = ref<string | null>(null);
 
 // Use composable for API work
 const { loading, error, fetchSchedule, fetchRoomSchedule, fetchFreeSlots } = useScheduleApi();
@@ -134,8 +141,44 @@ watch(() => filters.value.room, (newVal) => {
   if (newVal && filters.value.busy === false) fetchData();
 });
 
+// Отримуємо поточний тип тижня
+const fetchCurrentWeekType = async () => {
+  try {
+    const response = await httpClient.get('/week-type');
+    weekType.value = response.data.week_type;
+    // Якщо фільтр не був вибраний вручну, оновлюємо його
+    if (filters.value.nominator === null) {
+      filters.value = {
+        ...filters.value,
+        nominator: weekType.value
+      };
+    }
+  } catch (e) {
+    console.error('Не вдалося отримати поточний тип тижня', e);
+  }
+};
+
 // Load data on start
-onMounted(fetchData);
+onMounted(async () => {
+  await fetchCurrentWeekType();
+  fetchData();
+});
+
+// Слідкуємо за зміною типу тижня
+watch(weekType, (newVal) => {
+  if (filters.value.nominator === null && newVal) {
+    filters.value = {
+      ...filters.value,
+      nominator: newVal
+    };
+  }
+});
+
+// Слідкуємо за зміною defaultNominator
+watch(() => props.defaultNominator, (newVal) => {
+  console.log('DayList received new nominator:', newVal);
+  filters.value.nominator = newVal;
+}, { immediate: true });
 </script>
 
 <style scoped>

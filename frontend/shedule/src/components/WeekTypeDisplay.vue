@@ -14,6 +14,8 @@ const dateRange = ref({
   end: ''
 })
 
+const emit = defineEmits(['update:weekType']);
+
 onMounted(() => {
   console.log('onMounted WeekTypeDisplay');
   fetchWeekType();
@@ -29,6 +31,8 @@ const fetchWeekType = async (start = null, end = null) => {
         weekType.value = response.data.week_type;
         weekStart.value = response.data.week_start;
         weekEnd.value = response.data.week_end;
+        console.log('Emitting new week type:', response.data.week_type);
+        emit('update:weekType', response.data.week_type);
       }
     } else {
       console.log('Fetching current week type');
@@ -37,6 +41,8 @@ const fetchWeekType = async (start = null, end = null) => {
       weekType.value = response.data.week_type;
       weekStart.value = response.data.week_start;
       weekEnd.value = response.data.week_end;
+      console.log('Emitting new week type:', response.data.week_type);
+      emit('update:weekType', response.data.week_type);
     }
   } catch (error) {
     console.error('Error fetching week type:', error);
@@ -138,22 +144,31 @@ const cancelEditing = () => {
 }
 
 .week-type-badge {
-  background-color: #d32f2f;
-  color: #fff;
-  border: 1.5px solid #d32f2f;
-  border-radius: 6px;
+  background-color: transparent;
+  /* color: #ff4d4d; */
+  /* color: #ff3333; */
+  /* border: 1.5px solid #000000; */
+  /* border-radius: 6px; */
+  color: #2c3e50;
   padding: 0.15em 0.8em;
   font-size: 0.95rem;
-  font-weight: 500;
-  margin-right: 0.7rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  font-weight: 600;
+  margin-right: 0.3rem;
+  margin-left: -1.4rem;
+  text-shadow: 
+    0 0 1px rgba(44, 62, 80, 0.3);
+  /* box-shadow: 0 2px 5px rgba(255, 77, 77, 0.1); */
   transition: all 0.2s;
 }
 
-.week-type-badge:hover {
+/* .week-type-badge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+  /* text-shadow:  */
+    /* 0 0 2px #e57373, */
+    /* 0 0 6px rgba(229, 115, 115, 0.25); */
+  /* box-shadow: 0 4px 8px rgba(255, 51, 51, 0.3); */
+  /* transform: scale(1.05);
+} */ 
 
 .week-dates {
   color: #2c3e50;
