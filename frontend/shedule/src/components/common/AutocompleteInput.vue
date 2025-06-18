@@ -63,13 +63,20 @@ const handleInput = (event: Event) => {
   inputValue.value = value;
   emit('update:modelValue', value);
   emit('input', value);
+  showSuggestions.value = true;
 };
 
 const handleBlur = () => {
   setTimeout(() => {
     showSuggestions.value = false;
-  }, 200);
+  }, 300);
 };
+
+watch(() => props.suggestions, (newSuggestions) => {
+  if (newSuggestions.length > 0) {
+    showSuggestions.value = true;
+  }
+});
 
 const selectItem = (item: string) => {
   inputValue.value = item;

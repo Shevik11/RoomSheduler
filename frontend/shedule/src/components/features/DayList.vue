@@ -77,7 +77,18 @@ const hasSelectedFilters = computed(() => {
 // Load data
 const fetchData = async () => {
   try {
+    console.log('Fetching data with filters:', filters.value);
+    
+    // Якщо немає вибраних фільтрів, не завантажуємо дані
+    if (!hasSelectedFilters.value) {
+      console.log('No filters selected, clearing data');
+      scheduleData.value = [];
+      roomScheduleData.value = null;
+      return;
+    }
+
     if (filters.value.busy === false && filters.value.room) {
+      console.log('Fetching room schedule for:', filters.value.room);
       const data = await fetchRoomSchedule(filters.value.room);
       if (data) {
         roomScheduleData.value = data;
@@ -107,10 +118,12 @@ const fetchData = async () => {
         showFreeScheduleGrid.value = false;
       }
     } else if (filters.value.busy === false && filters.value.name_group) {
+      console.log('Fetching free slots for group:', filters.value.name_group);
       const data = await fetchFreeSlots(filters.value.name_group);
       scheduleData.value = data;
       showFreeScheduleGrid.value = true;
     } else {
+      console.log('Fetching schedule with filters');
       const data = await fetchSchedule(filters.value);
       if (data) {
         scheduleData.value = data;
@@ -123,23 +136,6 @@ const fetchData = async () => {
     roomScheduleData.value = null;
   }
 };
-
-// Look for changes in filters
-watch(() => filters.value, (newVal) => {
-  // If the status changed to "Free" and there is a room or group
-  if (newVal.busy === false && (newVal.room || newVal.name_group)) {
-    fetchData();
-  }
-  // If the status changed to "All" and there is a room
-  else if (newVal.busy === null && newVal.room) {
-    fetchData();
-  }
-}, { deep: true });
-
-// Look for changes in room
-watch(() => filters.value.room, (newVal) => {
-  if (newVal && filters.value.busy === false) fetchData();
-});
 
 // Отримуємо поточний тип тижня
 const fetchCurrentWeekType = async () => {
@@ -161,7 +157,13 @@ const fetchCurrentWeekType = async () => {
 // Load data on start
 onMounted(async () => {
   await fetchCurrentWeekType();
-  fetchData();
+  // Ініціалізуємо filters.nominator після отримання типу тижня
+  // Пріоритет надаємо props.defaultNominator, якщо він є
+  if (props.defaultNominator) {
+    filters.value.nominator = props.defaultNominator;
+  } else if (weekType.value && filters.value.nominator === null) {
+    filters.value.nominator = weekType.value;
+  }
 });
 
 // Слідкуємо за зміною типу тижня
@@ -177,8 +179,11 @@ watch(weekType, (newVal) => {
 // Слідкуємо за зміною defaultNominator
 watch(() => props.defaultNominator, (newVal) => {
   console.log('DayList received new nominator:', newVal);
-  filters.value.nominator = newVal;
-}, { immediate: true });
+  // Додаємо перевірку, щоб уникнути рекурсивних оновлень
+  if (newVal !== filters.value.nominator) {
+    filters.value.nominator = newVal;
+  }
+}, { immediate: false }); // Змінюємо immediate на false
 </script>
 
 <style scoped>

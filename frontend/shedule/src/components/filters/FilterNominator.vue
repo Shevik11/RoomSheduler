@@ -8,8 +8,8 @@
       class="filter-select"
     >
       <option value="">Будь-який</option>
-      <option value="Чисельник">Чисельник</option>
-      <option value="Знаменник">Знаменник</option>
+      <option value="nominator">Чисельник</option>
+      <option value="denominator">Знаменник</option>
     </select>
   </div>
 </template>
@@ -25,7 +25,7 @@ const emit = defineEmits<{
 
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  emit('update:modelValue', value === 'null' ? null : value);
+  emit('update:modelValue', value === '' ? null : value);
 };
 </script>
 

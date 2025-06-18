@@ -99,7 +99,7 @@ export function useFilters() {
     }
     isFetchingSubjects.value = true;
     try {
-      const suggestions = await scheduleService.getSubjectSuggestions(input, filters.name_group);
+      const suggestions = await scheduleService.getSubjectSuggestions(input, filters);
       filteredSubjects.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
       filteredSubjects.value = [];
@@ -133,7 +133,7 @@ export function useFilters() {
     }
     isFetchingTeachers.value = true;
     try {
-      const suggestions = await scheduleService.getTeacherSuggestions(input, filters.name_group, filters.name_of_para);
+      const suggestions = await scheduleService.getTeacherSuggestions(input, filters);
       filteredTeachers.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
       filteredTeachers.value = [];

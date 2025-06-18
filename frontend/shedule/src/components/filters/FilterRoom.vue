@@ -15,24 +15,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import type { Ref } from 'vue';
 import AutocompleteInput from '../common/AutocompleteInput.vue';
 import scheduleService from '../../services/scheduleService';
+import type { ScheduleFilters } from '../../types/schedule';
 
 const props = defineProps<{
   modelValue: string | null;
-  filters: {
-    name_group: string;
-    number_of_subgroup: number | null;
-    day_of_week: string | null;
-    nominator: string | null;
-    namb_of_para: number | null;
-    name_of_para: string;
-    room: string;
-    teacher: string;
-    busy: boolean | null;
-  };
+  filters: ScheduleFilters;
 }>();
 
 const emit = defineEmits<{
@@ -43,19 +34,28 @@ const roomValue: Ref<string> = ref(props.modelValue || '');
 const suggestions: Ref<string[]> = ref([]);
 const isLoading: Ref<boolean> = ref(false);
 
-watch(() => props.modelValue, (newValue: string | null) => {
+watch(() => props.modelValue, (newValue) => {
+  console.log('Model value changed:', newValue);
   roomValue.value = newValue || '';
+  if (newValue) {
+    handleInput(newValue);
+  }
 });
 
 const handleInput = async (value: string) => {
   if (!value) {
     suggestions.value = [];
+    emit('update:modelValue', null);
     return;
   }
 
   isLoading.value = true;
   try {
-    suggestions.value = await scheduleService.getRoomSuggestions(value, props.filters);
+    suggestions.value = [];
+    console.log('Fetching room suggestions with filters:', props.filters);
+    const newSuggestions = await scheduleService.getRoomSuggestions(value, props.filters);
+    console.log('Got room suggestions:', newSuggestions);
+    suggestions.value = newSuggestions;
   } catch (error) {
     console.error('Error fetching room suggestions:', error);
     suggestions.value = [];
@@ -64,8 +64,19 @@ const handleInput = async (value: string) => {
   }
 };
 
+watch(() => props.filters, (newFilters) => {
+  console.log('Filters changed:', newFilters);
+  if (roomValue.value && roomValue.value.trim()) {
+    nextTick(() => {
+      handleInput(roomValue.value);
+    });
+  }
+}, { deep: true, flush: 'post' });
+
 const handleSelect = (value: string) => {
+  console.log('Selected room:', value);
   emit('update:modelValue', value);
+  suggestions.value = [];
 };
 </script>
 

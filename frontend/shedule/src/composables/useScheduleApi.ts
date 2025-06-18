@@ -16,9 +16,12 @@ export function useScheduleApi() {
   const error = ref<string | null>(null);
 
   const handleError = (err: unknown): string => {
+    console.error('API Error:', err);
     if (err instanceof Error) {
       const apiError = err as ApiError;
-      return `Помилка: ${apiError.response?.data?.detail || apiError.message}`;
+      const errorMessage = apiError.response?.data?.detail || apiError.message;
+      console.error('Error details:', errorMessage);
+      return `Помилка: ${errorMessage}`;
     }
     return 'Помилка: Невідома помилка';
   };
@@ -27,7 +30,10 @@ export function useScheduleApi() {
     try {
       loading.value = true;
       error.value = null;
-      return await scheduleService.fetchSchedule(filters);
+      console.log('Fetching schedule with filters:', filters);
+      const result = await scheduleService.fetchSchedule(filters);
+      console.log('Schedule result:', result);
+      return result;
     } catch (err) {
       error.value = handleError(err);
       return [];
@@ -40,7 +46,10 @@ export function useScheduleApi() {
     try {
       loading.value = true;
       error.value = null;
-      return await scheduleService.fetchRoomSchedule(room);
+      console.log('Fetching room schedule for:', room);
+      const result = await scheduleService.fetchRoomSchedule(room);
+      console.log('Room schedule result:', result);
+      return result;
     } catch (err) {
       error.value = handleError(err);
       return null;
@@ -53,7 +62,10 @@ export function useScheduleApi() {
     try {
       loading.value = true;
       error.value = null;
-      return await scheduleService.fetchFreeSlots(group);
+      console.log('Fetching free slots for group:', group);
+      const result = await scheduleService.fetchFreeSlots(group);
+      console.log('Free slots result:', result);
+      return result;
     } catch (err) {
       error.value = handleError(err);
       return [];

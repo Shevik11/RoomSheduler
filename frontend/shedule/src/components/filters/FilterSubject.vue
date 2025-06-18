@@ -19,9 +19,11 @@ import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import AutocompleteInput from '../common/AutocompleteInput.vue';
 import scheduleService from '../../services/scheduleService';
+import type { ScheduleFilters } from '../../types/schedule';
 
 const props = defineProps<{
   modelValue: string | null;
+  filters: ScheduleFilters;
 }>();
 
 const emit = defineEmits<{
@@ -44,7 +46,7 @@ const handleInput = async (value: string) => {
 
   isLoading.value = true;
   try {
-    suggestions.value = await scheduleService.getSubjectSuggestions(value);
+    suggestions.value = await scheduleService.getSubjectSuggestions(value, props.filters);
   } catch (error) {
     console.error('Error fetching subject suggestions:', error);
     suggestions.value = [];

@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse
 from models.models import Days
 import logging
 
@@ -27,11 +26,11 @@ def fetch_days_by_filters(
     if name_group:
         query = query.filter(Days.name_group == name_group)
     if number_of_subgroup:
-        query = query.filter(Days.number_of_subgroup == number_of_subgroup)
+        query = query.filter((Days.number_of_subgroup == number_of_subgroup) | (Days.number_of_subgroup == 0))
     if day_of_week:
         query = query.filter(Days.day_of_week == day_of_week)
     if nominator:
-        query = query.filter(Days.nominator == nominator)
+        query = query.filter((Days.nominator == nominator) | (Days.nominator == 'both'))
     if namb_of_para:
         query = query.filter(Days.namb_of_para == namb_of_para)
     if name_of_para:
@@ -52,7 +51,7 @@ def fetch_days_by_filters(
     } for row in results]
 
     logger.info(f"Returning {len(result_list)} items")
-    return JSONResponse(content=result_list)
+    return result_list
 
 
 def fetch_room_schedule(room: str, db: Session):

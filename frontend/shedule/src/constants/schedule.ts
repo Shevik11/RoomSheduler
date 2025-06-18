@@ -25,6 +25,4 @@ export const DEFAULT_FILTERS = {
   room: '',
   teacher: '',
   busy: null,
-  group: '',    // додано
-  subject: ''   // додано
 }; 

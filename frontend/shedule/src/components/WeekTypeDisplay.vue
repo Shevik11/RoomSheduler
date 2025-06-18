@@ -1,85 +1,103 @@
-<script setup>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
 import httpClient from '../services/httpClient'
 import { DateRangePicker } from '../components/common'
 
-const weekType = ref(null)
-const weekStart = ref(null)
-const weekEnd = ref(null)
+const weekType = ref<string | null>(null)
+const weekStart = ref<string | null>(null)
+const weekEnd = ref<string | null>(null)
 const isEditing = ref(false)
-const tempStart = ref(null)
-const tempEnd = ref(null)
+const tempStart = ref<string | null>(null)
+const tempEnd = ref<string | null>(null)
 const dateRange = ref({
   start: '',
   end: ''
 })
 
-const emit = defineEmits(['update:weekType']);
+const emit = defineEmits(['update:weekType'])
 
 onMounted(() => {
-  console.log('onMounted WeekTypeDisplay');
-  fetchWeekType();
-});
+  console.log('onMounted WeekTypeDisplay')
+  fetchWeekType()
+})
 
-const fetchWeekType = async (start = null, end = null) => {
+const fetchWeekType = async (start: string | null = null, end: string | null = null) => {
   try {
     if (start && end) {
-      console.log('Sending request for custom dates:', { start, end });
-      const response = await httpClient.get(`/week-type/range?start_date=${start}&end_date=${end}`);
-      console.log('Custom date range response:', response.data);
+      console.log('Sending request for custom dates:', { start, end })
+      const response = await httpClient.get(`/week-type/range?start_date=${start}&end_date=${end}`)
+      console.log('Custom date range response:', response.data)
       if (response.data.week_type) {
-        weekType.value = response.data.week_type;
-        weekStart.value = response.data.week_start;
-        weekEnd.value = response.data.week_end;
-        console.log('Emitting new week type:', response.data.week_type);
-        emit('update:weekType', response.data.week_type);
+        const newWeekType = convertWeekType(response.data.week_type)
+        if (newWeekType !== weekType.value) {
+          weekType.value = newWeekType
+          weekStart.value = response.data.week_start
+          weekEnd.value = response.data.week_end
+          console.log('Emitting new week type:', weekType.value)
+          emit('update:weekType', weekType.value)
+        }
       }
     } else {
-      console.log('Fetching current week type');
-      const response = await httpClient.get('/week-type');
-      console.log('Current week response:', response.data);
-      weekType.value = response.data.week_type;
-      weekStart.value = response.data.week_start;
-      weekEnd.value = response.data.week_end;
-      console.log('Emitting new week type:', response.data.week_type);
-      emit('update:weekType', response.data.week_type);
+      console.log('Fetching current week type')
+      const response = await httpClient.get('/week-type')
+      console.log('Current week response:', response.data)
+      const newWeekType = convertWeekType(response.data.week_type)
+      if (newWeekType !== weekType.value) {
+        weekType.value = newWeekType
+        weekStart.value = response.data.week_start
+        weekEnd.value = response.data.week_end
+        console.log('Emitting new week type:', weekType.value)
+        emit('update:weekType', weekType.value)
+      }
     }
-  } catch (error) {
-    console.error('Error fetching week type:', error);
-    console.error('Error details:', error.response?.data);
+  } catch (error: any) {
+    console.error('Error fetching week type:', error)
+    console.error('Error details:', error.response?.data)
   }
 }
 
+const convertWeekType = (type: string): string => {
+  if (type === 'Чисельник') return 'nominator'
+  if (type === 'Знаменник') return 'denominator'
+  return type
+}
+
 const startEditing = () => {
-  tempStart.value = weekStart.value;
-  tempEnd.value = weekEnd.value;
-  isEditing.value = true;
+  tempStart.value = weekStart.value
+  tempEnd.value = weekEnd.value
+  isEditing.value = true
 }
 
 const handleDateChange = () => {
   if (tempStart.value && tempEnd.value) {
-    const start = new Date(tempStart.value);
-    const end = new Date(tempEnd.value);
+    const start = new Date(tempStart.value)
+    const end = new Date(tempEnd.value)
     
     if (start > end) {
-      console.error('Start date cannot be later than end date');
-      return;
+      console.error('Start date cannot be later than end date')
+      return
     }
     
     console.log('Date range selected:', { 
       start: tempStart.value, 
       end: tempEnd.value 
-    });
-    fetchWeekType(tempStart.value, tempEnd.value);
-    isEditing.value = false;
+    })
+    fetchWeekType(tempStart.value, tempEnd.value)
+    isEditing.value = false
   }
 }
 
 const cancelEditing = () => {
-  isEditing.value = false;
-  tempStart.value = weekStart.value;
-  tempEnd.value = weekEnd.value;
+  isEditing.value = false
+  tempStart.value = weekStart.value
+  tempEnd.value = weekEnd.value
 }
+
+const weekTypeDisplay = computed(() => {
+  if (weekType.value === 'nominator') return 'Чисельник'
+  if (weekType.value === 'denominator') return 'Знаменник'
+  return weekType.value
+})
 </script>
 
 <template>
@@ -87,7 +105,7 @@ const cancelEditing = () => {
     <div class="week-type-display" v-if="weekType">
       <div class="week-info">
         <span class="label">Поточний тиждень:</span>
-        <span class="week-type-badge">{{ weekType }}</span>
+        <span class="week-type-badge">{{ weekTypeDisplay }}</span>
         <div class="week-dates">
           <template v-if="!isEditing">
             <span class="dates-text" @click="startEditing">{{ weekStart }} – {{ weekEnd }}</span>
@@ -145,10 +163,6 @@ const cancelEditing = () => {
 
 .week-type-badge {
   background-color: transparent;
-  /* color: #ff4d4d; */
-  /* color: #ff3333; */
-  /* border: 1.5px solid #000000; */
-  /* border-radius: 6px; */
   color: #2c3e50;
   padding: 0.15em 0.8em;
   font-size: 0.95rem;
@@ -157,18 +171,8 @@ const cancelEditing = () => {
   margin-left: -1.4rem;
   text-shadow: 
     0 0 1px rgba(44, 62, 80, 0.3);
-  /* box-shadow: 0 2px 5px rgba(255, 77, 77, 0.1); */
   transition: all 0.2s;
 }
-
-/* .week-type-badge:hover {
-  transform: translateY(-2px);
-  /* text-shadow:  */
-    /* 0 0 2px #e57373, */
-    /* 0 0 6px rgba(229, 115, 115, 0.25); */
-  /* box-shadow: 0 4px 8px rgba(255, 51, 51, 0.3); */
-  /* transform: scale(1.05);
-} */ 
 
 .week-dates {
   color: #2c3e50;

@@ -12,14 +12,18 @@ class ScheduleService {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== null && value !== '') params[key] = value;
     });
-    console.log('Sending request with params:', params);
+    console.log('Sending request with params:', JSON.stringify(params, null, 2));
     const response: AxiosResponse<ScheduleItem[]> = await httpClient.get('/days/', { params });
-    console.log('Received data:', response.data);
+    console.log('Received data:', JSON.stringify(response.data, null, 2));
     return response.data;
   }
 
   async fetchRoomSchedule(room: string): Promise<RoomSchedule> {
-    const response = await httpClient.get(`/rooms/${room}/schedule/`);
+    const response = await httpClient.get('/rooms/schedule/', {
+      params: {
+        room: room
+      }
+    });
     return response.data;
   }
 
@@ -33,10 +37,12 @@ class ScheduleService {
   getGroupSuggestions = groupService.getGroupSuggestions;
   
   getAllSubjects = subjectService.getAllSubjects;
-  getSubjectSuggestions = subjectService.getSubjectSuggestions;
+  getSubjectSuggestions = (query: string, filters: ScheduleFilters) => 
+    subjectService.getSubjectSuggestions(query, filters);
   
   getAllTeachers = teacherService.getAllTeachers;
-  getTeacherSuggestions = teacherService.getTeacherSuggestions;
+  getTeacherSuggestions = (query: string, filters: ScheduleFilters) => 
+    teacherService.getTeacherSuggestions(query, filters);
   
   getAllRooms = roomService.getAllRooms;
   getRoomSuggestions = roomService.getRoomSuggestions;

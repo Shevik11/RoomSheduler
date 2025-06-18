@@ -1,6 +1,6 @@
 <template>
   <div class="filters-container">
-    <h3>Фільтри розкладу</h3>
+    <h3>Розклад занять</h3>
     <div class="filters">
       <FilterGroup v-model="filters.name_group" />
       <FilterSubgroup v-model="filters.number_of_subgroup" />
@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { DAYS_OF_WEEK, DEFAULT_FILTERS } from '../../constants/schedule';
 import type { ScheduleFilters } from '../../types/schedule.ts';
 import {
@@ -66,9 +66,12 @@ watch(() => props.modelValue, (newValue) => {
 // Завжди оновлюємо фільтр при зміні defaultNominator
 watch(() => props.defaultNominator, (newVal) => {
   console.log('ScheduleFilters updating nominator to:', newVal);
-  filters.value.nominator = newVal;
-  emit('update:modelValue', filters.value);
-}, { immediate: true });
+  // Перевіряємо, чи дійсно потрібно оновлювати
+  if (newVal !== filters.value.nominator) {
+    filters.value.nominator = newVal;
+    emit('update:modelValue', filters.value);
+  }
+}, { immediate: false }); // Змінюємо immediate на false
 
 const handleBusyChange = () => {
   if (filters.value.busy === true) {
@@ -76,17 +79,49 @@ const handleBusyChange = () => {
   }
 };
 
-// При скиданні фільтрів беремо поточне значення з WeekTypeDisplay
-const resetFilters = () => {
-  filters.value = { ...DEFAULT_FILTERS };
-  filters.value.nominator = props.defaultNominator;
-  emit('update:modelValue', filters.value);
+const applyFilters = () => {
+  // Створюємо копію фільтрів, щоб не втратити реактивність
+  const updatedFilters = { ...filters.value };
+  
+  // Оновлюємо батьківський компонент
+  emit('update:modelValue', updatedFilters);
+  
+  // Викликаємо подію apply
+  emit('apply');
+  
+  // Оновлюємо локальні фільтри
+  filters.value = updatedFilters;
 };
 
-const applyFilters = () => {
-  emit('update:modelValue', filters.value);
-  emit('apply');
+// Додаємо спостереження за змінами фільтрів
+watch(filters, (newFilters) => {
+  // Оновлюємо батьківський компонент при кожній зміні фільтрів
+  // Але тільки якщо це не зміна nominator через defaultNominator
+  emit('update:modelValue', { ...newFilters });
+}, { deep: true, flush: 'post' }); // Додаємо flush: 'post' для уникнення рекурсії
+
+// При скиданні фільтрів беремо поточне значення з WeekTypeDisplay
+const resetFilters = () => {
+  // Створюємо нові фільтри з поточним значенням номінатора
+  const newFilters = { 
+    ...DEFAULT_FILTERS,
+    nominator: props.defaultNominator 
+  };
+  
+  // Оновлюємо локальні фільтри
+  filters.value = newFilters;
+  
+  // Оновлюємо батьківський компонент
+  emit('update:modelValue', newFilters);
 };
+
+// Ініціалізуємо nominator при монтуванні компонента
+onMounted(() => {
+  if (props.defaultNominator && filters.value.nominator !== props.defaultNominator) {
+    filters.value.nominator = props.defaultNominator;
+    emit('update:modelValue', filters.value);
+  }
+});
 </script>
 
 <style scoped>

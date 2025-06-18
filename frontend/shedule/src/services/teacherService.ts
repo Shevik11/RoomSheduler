@@ -19,8 +19,9 @@ class TeacherService {
           )
       )
     };
-    // console.log('Teacher suggestions params:', params);
+    console.log('Teacher suggestions request params:', JSON.stringify(params, null, 2));
     const response = await httpClient.get('/teachers/suggestions/', { params });
+    console.log('Teacher suggestions response:', JSON.stringify(response.data, null, 2));
     return response.data;
   }
 }

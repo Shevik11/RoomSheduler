@@ -1,15 +1,18 @@
-<script setup>
+<script setup lang="ts">
 // Імпортуємо необхідні компоненти
 import { RouterView } from 'vue-router'
 import { BaseLayout } from './components/layout'
 import WeekTypeDisplay from './components/WeekTypeDisplay.vue'
 import { ref } from 'vue'
 
-const weekType = ref(null);
+const weekType = ref<string | null>(null);
 
-const handleWeekTypeUpdate = (newType) => {
+const handleWeekTypeUpdate = (newType: string) => {
   console.log('App received new week type:', newType);
-  weekType.value = newType;
+  // Перевіряємо, чи змінився тип тижня
+  if (newType !== weekType.value) {
+    weekType.value = newType;
+  }
 };
 </script>
 
