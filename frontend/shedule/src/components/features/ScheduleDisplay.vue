@@ -1,6 +1,6 @@
 <template>
   <div class="schedule-container">
-    <h3>Знайдено записів: {{ groupedScheduleData.length }}</h3>
+    <!-- <h3>Знайдено записів: {{ groupedScheduleData.length }}</h3> -->
 
     <div v-for="day in DAYS_OF_WEEK" :key="day" class="day-group">
       <h4 v-if="hasDayInSchedule(day)" class="day-title">{{ day }}</h4>
@@ -41,6 +41,17 @@
                 {{ item.busy ? 'Зайнято' : 'Вільно' }}
               </span>
             </div>
+
+            <!-- Кнопка детальної інформації -->
+            <div class="item-actions">
+              <button 
+                @click="showDetails(item)" 
+                class="details-btn"
+                type="button"
+              >
+                Детальна інформація
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -51,6 +62,7 @@
           <div class="grid-cell">Пара</div>
           <div class="grid-cell">Час</div>
           <div class="grid-cell">Статус</div>
+          <div class="grid-cell">Дії</div>
         </div>
         <div 
           v-for="para in 8" 
@@ -64,6 +76,143 @@
             <span v-if="isParaFree(day, para)" class="status-free">Вільно</span>
             <span v-else class="status-busy">Зайнято</span>
           </div>
+          <div class="grid-cell">
+            <button 
+              @click="showFreeParaDetails(day, para)" 
+              class="details-btn-small"
+              type="button"
+            >
+              Деталі
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модальне вікно з детальною інформацією -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Детальна інформація</h3>
+          <span @click="closeModal" class="modal-cancel-icon">✕</span>
+        </div>
+        <div class="modal-body">
+          <div v-if="selectedItem" class="details-content">
+            <!-- Вкладки -->
+            <div class="tabs">
+              <button 
+                @click="activeTab = 'group'" 
+                :class="['tab-btn', { active: activeTab === 'group' }]"
+                type="button"
+              >
+                Інфа про групу
+              </button>
+              <button 
+                @click="activeTab = 'teacher'" 
+                :class="['tab-btn', { active: activeTab === 'teacher' }]"
+                type="button"
+              >
+                Інфа про викладача і предмет
+              </button>
+              <button 
+                @click="activeTab = 'room'" 
+                :class="['tab-btn', { active: activeTab === 'room' }]"
+                type="button"
+              >
+                Інфа про аудиторію
+              </button>
+            </div>
+
+            <!-- Вміст вкладок -->
+            <div class="tab-content">
+              <!-- Вкладка "Інфа про групу" -->
+              <div v-show="activeTab === 'group'" class="tab-pane">
+                <div class="detail-row">
+                  <strong>День тижня:</strong> {{ selectedItem.day_of_week }}
+                </div>
+                <div class="detail-row">
+                  <strong>Пара:</strong> {{ selectedItem.namb_of_para }}
+                </div>
+                <div class="detail-row">
+                  <strong>Час:</strong> {{ selectedItem.time_of_para }}
+                </div>
+                <div class="detail-row">
+                  <strong>Групи:</strong> {{ selectedItem.groups?.join(', ') || selectedItem.name_group }}
+                </div>
+                <div v-if="selectedItem.number_of_subgroup" class="detail-row">
+                  <strong>Підгрупа:</strong> {{ selectedItem.number_of_subgroup }}
+                </div>
+                <div class="detail-row">
+                  <strong>Статус:</strong> 
+                  <span :class="selectedItem.busy ? 'status-busy' : 'status-free'">
+                    {{ selectedItem.busy ? 'Зайнято' : 'Вільно' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Вкладка "Інфа про викладача і предмет" -->
+              <div v-show="activeTab === 'teacher'" class="tab-pane">
+                <div class="detail-row">
+                  <strong>Предмет:</strong> {{ selectedItem.name_of_para }}
+                </div>
+                <div v-if="selectedItem.teacher" class="detail-row">
+                  <strong>Викладач:</strong> {{ selectedItem.teacher }}
+                </div>
+                <div v-else class="detail-row">
+                  <strong>Викладач:</strong> 
+                  <span class="no-data">Не вказано</span>
+                </div>
+                <div v-if="selectedItem.nominator" class="detail-row">
+                  <strong>Номінатор:</strong> {{ selectedItem.nominator }}
+                </div>
+                <div v-else class="detail-row">
+                  <strong>Номінатор:</strong> 
+                  <span class="no-data">Не вказано</span>
+                </div>
+                <div class="detail-row">
+                  <strong>День тижня:</strong> {{ selectedItem.day_of_week }}
+                </div>
+                <div class="detail-row">
+                  <strong>Пара:</strong> {{ selectedItem.namb_of_para }}
+                </div>
+                <div class="detail-row">
+                  <strong>Час:</strong> {{ selectedItem.time_of_para }}
+                </div>
+              </div>
+
+              <!-- Вкладка "Інфа про аудиторію" -->
+              <div v-show="activeTab === 'room'" class="tab-pane">
+                <div v-if="selectedItem.room" class="detail-row">
+                  <strong>Аудиторія:</strong> {{ selectedItem.room }}
+                </div>
+                <div v-else class="detail-row">
+                  <strong>Аудиторія:</strong> 
+                  <span class="no-data">Не вказано</span>
+                </div>
+                <div class="detail-row">
+                  <strong>День тижня:</strong> {{ selectedItem.day_of_week }}
+                </div>
+                <div class="detail-row">
+                  <strong>Пара:</strong> {{ selectedItem.namb_of_para }}
+                </div>
+                <div class="detail-row">
+                  <strong>Час:</strong> {{ selectedItem.time_of_para }}
+                </div>
+                <div class="detail-row">
+                  <strong>Предмет:</strong> {{ selectedItem.name_of_para }}
+                </div>
+                <div class="detail-row">
+                  <strong>Статус:</strong> 
+                  <span :class="selectedItem.busy ? 'status-busy' : 'status-free'">
+                    {{ selectedItem.busy ? 'Зайнято' : 'Вільно' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="no-info">
+            <p>На даний момент інформації немає</p>
+          </div>
         </div>
       </div>
     </div>
@@ -71,7 +220,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { DAYS_OF_WEEK, PARA_TIMES } from '../../constants/schedule';
 import type { ScheduleItem } from '../../types/schedule';
 
@@ -79,6 +228,11 @@ const props = defineProps<{
   scheduleData: ScheduleItem[];
   showFreeScheduleGrid: boolean;
 }>();
+
+// Reactive state for modal
+const showModal = ref(false);
+const selectedItem = ref<ScheduleItem | null>(null);
+const activeTab = ref('group');
 
 // Calculated property for grouped schedule data
 const groupedScheduleData = computed(() => {
@@ -117,6 +271,38 @@ const isParaFree = (day: string, paraNumber: number) => {
   );
   return busyItems.length === 0;
 };
+
+// Show details for schedule item
+const showDetails = (item: ScheduleItem) => {
+  selectedItem.value = item;
+  showModal.value = true;
+};
+
+// Show details for free para
+const showFreeParaDetails = (day: string, paraNumber: number) => {
+  selectedItem.value = {
+    day_of_week: day,
+    namb_of_para: paraNumber,
+    time_of_para: getParaTime(paraNumber),
+    name_of_para: 'Вільно',
+    name_group: '',
+    room: '',
+    teacher: '',
+    number_of_subgroup: 0,
+    nominator: '',
+    busy: false,
+    key: `${day}-${paraNumber}-free`,
+    groups: []
+  };
+  showModal.value = true;
+};
+
+// Close modal
+const closeModal = () => {
+  showModal.value = false;
+  selectedItem.value = null;
+  activeTab.value = 'group'; // Reset to first tab when closing
+};
 </script>
 
 <style scoped>
@@ -151,6 +337,10 @@ const isParaFree = (day: string, paraNumber: number) => {
   background-color: white;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 290px;
 }
 
 .schedule-item:hover {
@@ -219,6 +409,74 @@ const isParaFree = (day: string, paraNumber: number) => {
   font-size: 14px;
 }
 
+.item-actions {
+  margin-top: 10px;
+}
+
+.details-btn {
+  background-color: #d32f2f;
+  color: #fff;
+  border: 1.5px solid #d32f2f;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.details-btn:hover {
+  background-color: #b71c1c;
+  border-color: #b71c1c;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.details-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
+}
+
+.details-btn:active {
+  background-color: #a31515;
+  border-color: #a31515;
+  color: #fff;
+}
+
+.details-btn-small {
+  background-color: #d32f2f;
+  color: #fff;
+  border: 1.5px solid #d32f2f;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.details-btn-small:hover {
+  background-color: #b71c1c;
+  border-color: #b71c1c;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.details-btn-small:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15);
+}
+
+.details-btn-small:active {
+  background-color: #a31515;
+  border-color: #a31515;
+  color: #fff;
+}
+
 .status-busy {
   color: #e74c3c;
   font-weight: 500;
@@ -232,7 +490,7 @@ const isParaFree = (day: string, paraNumber: number) => {
 /* Стилі для сітки вільних пар */
 .free-schedule-grid {
   display: grid;
-  grid-template-columns: 80px 150px 1fr;
+  grid-template-columns: 80px 150px 1fr 100px;
   gap: 1px;
   background-color: #e0e0e0;
   border: 1px solid #e0e0e0;
@@ -274,5 +532,171 @@ const isParaFree = (day: string, paraNumber: number) => {
 
 .free-para:hover .grid-cell {
   background-color: #d0e9d1 !important;
+}
+
+/* Стилі для модального вікна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 95%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18), 0 2px 8px rgba(44, 62, 80, 0.10);
+  border: 1.5px solid #e0e0e0;
+  padding: 0;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px 16px 28px;
+  border-bottom: 1.5px solid #f0f0f0;
+  background: #f8f8f8;
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.modal-cancel-icon {
+  font-size: 1.25em;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  color: #2c3e50;
+  margin-left: 8px;
+  margin-right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cancel-icon:hover {
+  background-color: #f8f9fa;
+  opacity: 1;
+  color: #e74c3c;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.modal-body {
+  padding: 28px 28px 24px 28px;
+  background: #fff;
+  border-radius: 0 0 16px 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  background: #f8f8f8;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.04);
+  border: 1.5px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  color: #7f8c8d;
+  font-weight: 600;
+  border-bottom: 1.5px solid transparent;
+  border-right: 1.5px solid #e0e0e0;
+  transition: all 0.2s;
+  border-radius: 0;
+  outline: none;
+}
+
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn.active {
+  color: #d32f2f;
+  background: #fff;
+  border-bottom: 1.5px solid #d32f2f;
+  z-index: 2;
+}
+
+.tab-btn:hover {
+  color: #d32f2f;
+  background: #fbeaea;
+}
+
+.tab-content {
+  min-height: 180px;
+  margin-top: 8px;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane[style*="display: block"] {
+  display: block;
+}
+
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.04rem;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row strong {
+  color: #2c3e50;
+  min-width: 130px;
+  font-weight: 600;
+}
+
+.no-info {
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 24px 0;
+  font-size: 1.08rem;
+}
+
+.no-data {
+  color: #7f8c8d;
+  font-style: italic;
 }
 </style> 
