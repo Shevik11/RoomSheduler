@@ -7,10 +7,10 @@ from fastapi import Depends
 load_dotenv()
 
 # Конфігурація Redis з змінних середовища
-REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-REDIS_DB = int(os.getenv('REDIS_DB', 0))
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = int(os.getenv('REDIS_PORT'))
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+REDIS_USERNAME = os.getenv('REDIS_USERNAME')
 
 @lru_cache()
 def get_redis():
@@ -18,7 +18,7 @@ def get_redis():
     return redis.Redis(
         host=REDIS_HOST,
         port=REDIS_PORT,
-        db=REDIS_DB,
+        username=REDIS_USERNAME,
         password=REDIS_PASSWORD,
         decode_responses=True
     )
@@ -28,7 +28,7 @@ async def get_redis_async():
     return redis.Redis(
         host=REDIS_HOST,
         port=REDIS_PORT,
-        db=REDIS_DB,
+        username=REDIS_USERNAME,
         password=REDIS_PASSWORD,
         decode_responses=True
     )
