@@ -29,6 +29,7 @@
     v-if="!loading && !error && hasSelectedFilters && hasData"
     :schedule-data="scheduleData"
     :show-free-schedule-grid="showFreeScheduleGrid"
+    :filters="filters"
   />
 </template>
 

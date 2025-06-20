@@ -48,8 +48,9 @@
                 @click="showDetails(item)" 
                 class="details-btn"
                 type="button"
+                v-if="shouldShowDetailsButton"
               >
-                Детальна інформація
+                Інформація про аудиторію
               </button>
             </div>
           </div>
@@ -81,8 +82,9 @@
               @click="showFreeParaDetails(day, para)" 
               class="details-btn-small"
               type="button"
+              v-if="shouldShowDetailsButton"
             >
-              Деталі
+              Інформація
             </button>
           </div>
         </div>
@@ -93,120 +95,37 @@
     <div v-if="showModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>Детальна інформація</h3>
+          <h3>Інформація про аудиторію</h3>
           <span @click="closeModal" class="modal-cancel-icon">✕</span>
         </div>
         <div class="modal-body">
           <div v-if="selectedItem" class="details-content">
-            <!-- Вкладки -->
-            <div class="tabs">
-              <button 
-                @click="activeTab = 'group'" 
-                :class="['tab-btn', { active: activeTab === 'group' }]"
-                type="button"
-              >
-                Інфа про групу
-              </button>
-              <button 
-                @click="activeTab = 'teacher'" 
-                :class="['tab-btn', { active: activeTab === 'teacher' }]"
-                type="button"
-              >
-                Інфа про викладача і предмет
-              </button>
-              <button 
-                @click="activeTab = 'room'" 
-                :class="['tab-btn', { active: activeTab === 'room' }]"
-                type="button"
-              >
-                Інфа про аудиторію
-              </button>
-            </div>
-
-            <!-- Вміст вкладок -->
-            <div class="tab-content">
-              <!-- Вкладка "Інфа про групу" -->
-              <div v-show="activeTab === 'group'" class="tab-pane">
-                <div class="detail-row">
-                  <strong>День тижня:</strong> {{ selectedItem.day_of_week }}
-                </div>
-                <div class="detail-row">
-                  <strong>Пара:</strong> {{ selectedItem.namb_of_para }}
-                </div>
-                <div class="detail-row">
-                  <strong>Час:</strong> {{ selectedItem.time_of_para }}
-                </div>
-                <div class="detail-row">
-                  <strong>Групи:</strong> {{ selectedItem.groups?.join(', ') || selectedItem.name_group }}
-                </div>
-                <div v-if="selectedItem.number_of_subgroup" class="detail-row">
-                  <strong>Підгрупа:</strong> {{ selectedItem.number_of_subgroup }}
-                </div>
-                <div class="detail-row">
-                  <strong>Статус:</strong> 
-                  <span :class="selectedItem.busy ? 'status-busy' : 'status-free'">
-                    {{ selectedItem.busy ? 'Зайнято' : 'Вільно' }}
-                  </span>
-                </div>
+            <!-- Інформація про аудиторію -->
+            <div class="room-info">
+              <div v-if="selectedItem.room" class="detail-row">
+                <strong>Аудиторія:</strong> {{ selectedItem.room }}
               </div>
-
-              <!-- Вкладка "Інфа про викладача і предмет" -->
-              <div v-show="activeTab === 'teacher'" class="tab-pane">
-                <div class="detail-row">
-                  <strong>Предмет:</strong> {{ selectedItem.name_of_para }}
-                </div>
-                <div v-if="selectedItem.teacher" class="detail-row">
-                  <strong>Викладач:</strong> {{ selectedItem.teacher }}
-                </div>
-                <div v-else class="detail-row">
-                  <strong>Викладач:</strong> 
-                  <span class="no-data">Не вказано</span>
-                </div>
-                <div v-if="selectedItem.nominator" class="detail-row">
-                  <strong>Номінатор:</strong> {{ selectedItem.nominator }}
-                </div>
-                <div v-else class="detail-row">
-                  <strong>Номінатор:</strong> 
-                  <span class="no-data">Не вказано</span>
-                </div>
-                <div class="detail-row">
-                  <strong>День тижня:</strong> {{ selectedItem.day_of_week }}
-                </div>
-                <div class="detail-row">
-                  <strong>Пара:</strong> {{ selectedItem.namb_of_para }}
-                </div>
-                <div class="detail-row">
-                  <strong>Час:</strong> {{ selectedItem.time_of_para }}
-                </div>
+              <div v-else class="detail-row">
+                <strong>Аудиторія:</strong> 
+                <span class="no-data">Не вказано</span>
               </div>
-
-              <!-- Вкладка "Інфа про аудиторію" -->
-              <div v-show="activeTab === 'room'" class="tab-pane">
-                <div v-if="selectedItem.room" class="detail-row">
-                  <strong>Аудиторія:</strong> {{ selectedItem.room }}
-                </div>
-                <div v-else class="detail-row">
-                  <strong>Аудиторія:</strong> 
-                  <span class="no-data">Не вказано</span>
-                </div>
-                <div class="detail-row">
-                  <strong>День тижня:</strong> {{ selectedItem.day_of_week }}
-                </div>
-                <div class="detail-row">
-                  <strong>Пара:</strong> {{ selectedItem.namb_of_para }}
-                </div>
-                <div class="detail-row">
-                  <strong>Час:</strong> {{ selectedItem.time_of_para }}
-                </div>
-                <div class="detail-row">
-                  <strong>Предмет:</strong> {{ selectedItem.name_of_para }}
-                </div>
-                <div class="detail-row">
-                  <strong>Статус:</strong> 
-                  <span :class="selectedItem.busy ? 'status-busy' : 'status-free'">
-                    {{ selectedItem.busy ? 'Зайнято' : 'Вільно' }}
-                  </span>
-                </div>
+              <div class="detail-row">
+                <strong>День тижня:</strong> {{ selectedItem.day_of_week }}
+              </div>
+              <div class="detail-row">
+                <strong>Пара:</strong> {{ selectedItem.namb_of_para }}
+              </div>
+              <div class="detail-row">
+                <strong>Час:</strong> {{ selectedItem.time_of_para }}
+              </div>
+              <div class="detail-row">
+                <strong>Предмет:</strong> {{ selectedItem.name_of_para }}
+              </div>
+              <div class="detail-row">
+                <strong>Статус:</strong> 
+                <span :class="selectedItem.busy ? 'status-busy' : 'status-free'">
+                  {{ selectedItem.busy ? 'Зайнято' : 'Вільно' }}
+                </span>
               </div>
             </div>
           </div>
@@ -227,12 +146,20 @@ import type { ScheduleItem } from '../../types/schedule';
 const props = defineProps<{
   scheduleData: ScheduleItem[];
   showFreeScheduleGrid: boolean;
+  filters: {
+    busy: boolean | null;
+    room: string;
+  };
 }>();
 
 // Reactive state for modal
 const showModal = ref(false);
 const selectedItem = ref<ScheduleItem | null>(null);
-const activeTab = ref('group');
+
+// Computed property to determine if details button should be shown
+const shouldShowDetailsButton = computed(() => {
+  return props.filters.busy === false; // Показуємо тільки при пошуку вільних аудиторій
+});
 
 // Calculated property for grouped schedule data
 const groupedScheduleData = computed(() => {
@@ -301,7 +228,6 @@ const showFreeParaDetails = (day: string, paraNumber: number) => {
 const closeModal = () => {
   showModal.value = false;
   selectedItem.value = null;
-  activeTab.value = 'group'; // Reset to first tab when closing
 };
 </script>
 
@@ -607,62 +533,13 @@ const closeModal = () => {
   border-radius: 0 0 16px 16px;
 }
 
-.tabs {
-  display: flex;
-  gap: 0;
-  margin-bottom: 24px;
-  background: #f8f8f8;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(44,62,80,0.04);
-  border: 1.5px solid #e0e0e0;
-  overflow: hidden;
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  padding: 5px 8px;
-  cursor: pointer;
-  font-size: 0.92rem;
-  color: #7f8c8d;
-  font-weight: 600;
-  border-bottom: 1.5px solid transparent;
-  border-right: 1.5px solid #e0e0e0;
-  transition: all 0.2s;
-  border-radius: 0;
-  outline: none;
-}
-
-.tab-btn:last-child {
-  border-right: none;
-}
-
-.tab-btn.active {
-  color: #d32f2f;
-  background: #fff;
-  border-bottom: 1.5px solid #d32f2f;
-  z-index: 2;
-}
-
-.tab-btn:hover {
-  color: #d32f2f;
-  background: #fbeaea;
-}
-
-.tab-content {
-  min-height: 180px;
-  margin-top: 8px;
-}
-
-.tab-pane {
-  display: none;
-}
-
-.tab-pane[style*="display: block"] {
-  display: block;
-}
-
 .details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.room-info {
   display: flex;
   flex-direction: column;
   gap: 18px;
