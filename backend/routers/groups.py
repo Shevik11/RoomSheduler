@@ -171,7 +171,7 @@ async def get_group_free_slots(
         
         return free_slots
     except Exception as e:
-        logger.error(f"Error fetching free slots for group {group_name}: {e}")
+        logger.error(f"Error fetching free slots for group: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching free slots: {str(e)}")
 
 
