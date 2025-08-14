@@ -18,9 +18,7 @@ const props = defineProps<{
   modelValue: number | null;
 }>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", value: number | null): void;
-}>();
+const emit = defineEmits<(e: "update:modelValue", value: number | null) => void>();
 
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;

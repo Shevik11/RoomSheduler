@@ -37,9 +37,39 @@ class ScheduleService {
     return response.data;
   }
 
-  async fetchFreeSlots(group: string): Promise<ScheduleItem[]> {
-    const response = await httpClient.get(`/groups/${group}/free-slots/`);
-    return response.data;
+  async fetchFreeSlots(group: string, nominator?: string): Promise<ScheduleItem[]> {
+    try {
+      // Properly encode the group name to handle special characters
+      const encodedGroup = encodeURIComponent(group);
+      
+      const params: Record<string, any> = {};
+      if (nominator) {
+        params.nominator = nominator;
+      }
+      
+      console.log(`Fetching free slots for group: ${group} (encoded: ${encodedGroup})`);
+      
+      const response = await httpClient.get(`/groups/${encodedGroup}/free-slots/`, {
+        params
+      });
+      
+      console.log(`Successfully fetched ${response.data.length} free slots for group ${group}`);
+      return response.data;
+    } catch (error: any) {
+      console.error(`Error fetching free slots for group ${group}:`, error);
+      
+      // Provide more specific error messages
+      if (error.response?.status === 404) {
+        throw new Error(`Групу "${group}" не знайдено або для неї немає розкладу`);
+      } else if (error.response?.status === 500) {
+        throw new Error(`Помилка сервера при отриманні вільних слотів для групи "${group}"`);
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        throw new Error('Помилка мережі. Перевірте підключення до інтернету');
+      }
+      
+      // Re-throw the original error if we can't handle it specifically
+      throw error;
+    }
   }
 
   // Делегуємо методи до відповідних сервісів

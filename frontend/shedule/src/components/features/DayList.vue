@@ -132,8 +132,8 @@ const fetchData = async () => {
         showFreeScheduleGrid.value = false;
       }
     } else if (filters.value.busy === false && filters.value.name_group) {
-      console.log("Fetching free slots for group:", filters.value.name_group);
-      const data = await fetchFreeSlots(filters.value.name_group);
+      console.log("Fetching free slots for group:", filters.value.name_group, "nominator:", filters.value.nominator);
+      const data = await fetchFreeSlots(filters.value.name_group, filters.value.nominator || undefined);
       scheduleData.value = data;
       showFreeScheduleGrid.value = true;
     } else {

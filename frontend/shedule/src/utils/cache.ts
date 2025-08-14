@@ -5,7 +5,7 @@ interface CacheItem<T> {
 
 class Cache {
   private static instance: Cache;
-  private cache: Map<string, CacheItem<any>>;
+  private readonly cache: Map<string, CacheItem<any>>;
   private readonly defaultExpiration: number = 5 * 60 * 1000; // 5 minutes
 
   private constructor() {

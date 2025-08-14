@@ -22,9 +22,7 @@ const props = defineProps<{
   modelValue: string | null;
 }>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", value: string | null): void;
-}>();
+const emit = defineEmits<(e: "update:modelValue", value: string | null) => void>();
 
 const daysOfWeek = DAYS_OF_WEEK;
 

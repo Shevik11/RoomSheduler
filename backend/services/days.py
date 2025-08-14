@@ -15,7 +15,7 @@ def fetch_days_by_filters(
     number_of_subgroup: int | None,
     day_of_week: str | None,
     nominator: str | None,
-    time_of_para: str | None,
+    time_of_para: str | None,  # Currently unused but kept for API compatibility
     namb_of_para: int | None,
     name_of_para: str | None,
     room: str | None,
@@ -120,4 +120,94 @@ def fetch_room_schedule(room: str, db: Session):
         return result
 
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def _get_occupied_slots(scheduled_periods):
+    """Extract occupied time slots from scheduled periods."""
+    occupied_slots = set()
+    for period in scheduled_periods:
+        if period.nominator == "both":
+            occupied_slots.add((period.day_of_week, period.namb_of_para, "numerator"))
+            occupied_slots.add((period.day_of_week, period.namb_of_para, "denominator"))
+        else:
+            occupied_slots.add((period.day_of_week, period.namb_of_para, period.nominator))
+    return occupied_slots
+
+
+def _get_schedule_constants():
+    """Get schedule constants for days and para times."""
+    days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця"]
+    paras = range(1, 9)
+    para_times = {
+        1: "8:30-10:05",
+        2: "10:25-12:00",
+        3: "12:20-13:55",
+        4: "14:15-15:50",
+        5: "16:10-17:45",
+        6: "18:05-19:40",
+        7: "19:50-21:25",
+        8: "21:35-23:10",
+    }
+    return days, paras, para_times
+
+
+def _get_nominators_to_check(nominator):
+    """Determine which nominators to check based on input."""
+    return [nominator] if nominator else ["numerator", "denominator"]
+
+
+def _create_free_slot(day, para, nom, group_name, para_times):
+    """Create a free slot dictionary."""
+    return {
+        "day_of_week": day,
+        "namb_of_para": para,
+        "time_of_para": para_times.get(para, ""),
+        "name_of_para": "Вільно",
+        "room": "",
+        "teacher": "",
+        "number_of_subgroup": None,
+        "nominator": nom,
+        "busy": False,
+        "name_group": group_name,
+        "key": f"{day}-{para}-Вільно-{group_name}-{nom}",
+        "groups": [group_name],
+    }
+
+
+def fetch_group_free_slots(db: Session, group_name: str, nominator: str | None = None):
+    """
+    Find all free time slots for a specific group by identifying periods
+    where the group doesn't have scheduled classes.
+    """
+    try:
+        # Get all scheduled periods for the group
+        scheduled_query = db.query(Days).filter(Days.name_group == group_name)
+        
+        if nominator:
+            scheduled_query = scheduled_query.filter(
+                (Days.nominator == nominator) | (Days.nominator == "both")
+            )
+        
+        scheduled_periods = scheduled_query.all()
+        occupied_slots = _get_occupied_slots(scheduled_periods)
+        
+        days, paras, para_times = _get_schedule_constants()
+        nominators_to_check = _get_nominators_to_check(nominator)
+        
+        # Find free slots
+        free_slots = []
+        for day in days:
+            for para in paras:
+                for nom in nominators_to_check:
+                    slot = (day, para, nom)
+                    if slot not in occupied_slots:
+                        free_slot = _create_free_slot(day, para, nom, group_name, para_times)
+                        free_slots.append(free_slot)
+        
+        logger.info(f"Found {len(free_slots)} free slots for group {group_name}")
+        return free_slots
+        
+    except Exception as e:
+        logger.error(f"Error fetching free slots for group {group_name}: {e}")
         raise HTTPException(status_code=500, detail=str(e))

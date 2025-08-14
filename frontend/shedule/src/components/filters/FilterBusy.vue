@@ -19,13 +19,11 @@ const props = defineProps<{
   modelValue: boolean | null;
 }>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", value: boolean | null): void;
-}>();
+const emit = defineEmits<(e: "update:modelValue", value: boolean | null) => void>();
 
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  emit("update:modelValue", value === "null" ? null : value === "true");
+  emit("update:modelValue", value === "" ? null : value === "true");
 };
 </script>
 

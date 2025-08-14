@@ -130,25 +130,3 @@ The project includes several levels of optimization:
 ## API Documentation
 
 The API documentation is available at `/docs` when running the backend server. It provides detailed information about all available endpoints, request/response formats, and authentication requirements.
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-MIT
-
-## Authors
-
-- Shevik(Maks Shevchuk)
-
-## Contact
-
-- Email: maksshevchuk621@gmail.com
-- GitHub: Shevik11
-- Telegram: @shevik_11

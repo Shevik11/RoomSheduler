@@ -20,7 +20,7 @@ httpClient.interceptors.request.use(
   },
   (error) => {
     console.error("Request Error:", error);
-    return Promise.reject(error);
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
   },
 );
 
@@ -45,7 +45,7 @@ httpClient.interceptors.response.use(
       data: error.response?.data,
       message: error.message,
     });
-    return Promise.reject(error);
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
   },
 );
 

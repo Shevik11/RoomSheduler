@@ -2,10 +2,7 @@ import { ref } from "vue";
 import scheduleService from "../services/scheduleService";
 import type {
   ScheduleFilters,
-  ScheduleItem,
-  RoomSchedule,
 } from "../types/schedule";
-import type { AxiosError } from "axios";
 
 interface ApiError extends Error {
   response?: {
@@ -62,16 +59,21 @@ export function useScheduleApi() {
     }
   };
 
-  const fetchFreeSlots = async (group: string) => {
+  const fetchFreeSlots = async (group: string, nominator?: string) => {
     try {
       loading.value = true;
       error.value = null;
-      console.log("Fetching free slots for group:", group);
-      const result = await scheduleService.fetchFreeSlots(group);
+      console.log("Fetching free slots for group:", group, "nominator:", nominator);
+      const result = await scheduleService.fetchFreeSlots(group, nominator);
       console.log("Free slots result:", result);
       return result;
     } catch (err) {
-      error.value = handleError(err);
+      // Use the error message directly from the service if it's already formatted
+      if (err instanceof Error && err.message.includes('Групу') || err instanceof Error && err.message.includes('Помилка')) {
+        error.value = err.message;
+      } else {
+        error.value = handleError(err);
+      }
       return [];
     } finally {
       loading.value = false;

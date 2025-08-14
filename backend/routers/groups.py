@@ -129,6 +129,52 @@ async def get_all_groups(
     return result
 
 
+@router.get("/{group_name}/free-slots/")
+async def get_group_free_slots(
+    group_name: str,
+    nominator: str | None = Query(None, description="Nominator (numerator/denominator)"),
+    db: Session = Depends(get_db),
+    redis_client: redis.Redis = Depends(get_redis),
+):
+    """Get free slots for a specific group"""
+    from services.days import fetch_group_free_slots
+    
+    # Generate cache key for free slots
+    cache_key = f"group_free_slots:{group_name}:{nominator or 'all'}"
+    
+    # Try to get from cache
+    try:
+        async def get_cached_data(redis_client):
+            return await redis_client.get(cache_key)
+        
+        cached_data = await safe_redis_operation(get_cached_data)
+        if cached_data:
+            logger.info(f"Retrieved free slots from cache for group: {group_name}")
+            return json.loads(cached_data)
+    except Exception as e:
+        logger.warning(f"Failed to retrieve from cache, falling back to database: {e}")
+    
+    # Fetch from database
+    try:
+        free_slots = fetch_group_free_slots(db, group_name, nominator)
+        
+        # Cache the result
+        try:
+            async def cache_data(redis_client):
+                await redis_client.setex(cache_key, 300, json.dumps(free_slots))
+                return True
+            
+            await safe_redis_operation(cache_data)
+            logger.info(f"Cached free slots for group: {group_name}")
+        except Exception as e:
+            logger.warning(f"Failed to cache free slots data: {e}")
+        
+        return free_slots
+    except Exception as e:
+        logger.error(f"Error fetching free slots for group {group_name}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching free slots: {str(e)}")
+
+
 @router.delete("/cache/clear")
 async def clear_groups_cache(redis_client: redis.Redis = Depends(get_redis)):
     # clear cache for groups

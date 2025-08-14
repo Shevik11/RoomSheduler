@@ -18,7 +18,6 @@
 import { ref, watch } from "vue";
 import type { Ref } from "vue";
 import AutocompleteInput from "../common/AutocompleteInput.vue";
-import scheduleService from "../../services/scheduleService";
 import { debounce } from "../../utils/debounce";
 import groupService from "../../services/groupService";
 
@@ -26,9 +25,7 @@ const props = defineProps<{
   modelValue: string;
 }>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", value: string): void;
-}>();
+const emit = defineEmits<(e: "update:modelValue", value: string) => void>();
 
 const groupValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);

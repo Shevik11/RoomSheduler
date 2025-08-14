@@ -67,7 +67,7 @@ async def clear_all_caches(redis_client: redis.Redis = Depends(get_redis_depende
         await redis_client.delete(*all_keys)
 
     return {
-        "message": f"Cleared all caches",
+        "message": "Cleared all caches",
         "cleared_entries": len(all_keys),
         "patterns": cache_patterns,
     }

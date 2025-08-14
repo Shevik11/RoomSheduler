@@ -26,9 +26,7 @@ const props = defineProps<{
   filters: ScheduleFilters;
 }>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", value: string | null): void;
-}>();
+const emit = defineEmits<(e: "update:modelValue", value: string | null) => void>();
 
 const subjectValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);

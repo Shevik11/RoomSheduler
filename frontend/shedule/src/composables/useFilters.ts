@@ -42,11 +42,7 @@ export function useFilters() {
   const roomCache: Cache = {};
   const teacherCache: Cache = {};
 
-  // Check if cache is valid
-  const isCacheValid = (cache: Cache, key: string): boolean => {
-    const cached = cache[key];
-    return cached && Date.now() - cached.timestamp < CACHE_EXPIRATION;
-  };
+
 
   // Load all data on mount
   const loadAllData = async () => {
@@ -85,6 +81,7 @@ export function useFilters() {
       const suggestions = await scheduleService.getGroupSuggestions(input);
       filteredGroups.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
+      console.error("Error fetching group suggestions:", err);
       filteredGroups.value = [];
     } finally {
       isFetchingGroups.value = false;
@@ -108,6 +105,7 @@ export function useFilters() {
       );
       filteredSubjects.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
+      console.error("Error fetching subject suggestions:", err);
       filteredSubjects.value = [];
     } finally {
       isFetchingSubjects.value = false;
@@ -128,6 +126,7 @@ export function useFilters() {
       );
       filteredRooms.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
+      console.error("Error fetching room suggestions:", err);
       filteredRooms.value = [];
     } finally {
       isFetchingRooms.value = false;
@@ -151,6 +150,7 @@ export function useFilters() {
       );
       filteredTeachers.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
+      console.error("Error fetching teacher suggestions:", err);
       filteredTeachers.value = [];
     } finally {
       isFetchingTeachers.value = false;
