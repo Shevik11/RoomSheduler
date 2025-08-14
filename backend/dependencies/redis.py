@@ -1,7 +1,8 @@
-import redis.asyncio as redis
-from functools import lru_cache
-import os
 import logging
+import os
+from functools import lru_cache
+
+import redis.asyncio as redis
 from dotenv import load_dotenv
 from fastapi import Depends
 
@@ -9,25 +10,26 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-REDIS_HOST = os.getenv('REDIS_HOST')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
-REDIS_USERNAME = os.getenv('REDIS_USERNAME')
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+REDIS_USERNAME = os.getenv("REDIS_USERNAME")
 
-REDIS_DISABLED = os.getenv('REDIS_DISABLED', 'false').lower() == 'true'
+REDIS_DISABLED = os.getenv("REDIS_DISABLED", "false").lower() == "true"
 
 # Redis connection settings
 REDIS_SETTINGS = {
-    'host': REDIS_HOST,
-    'port': REDIS_PORT,
-    'username': REDIS_USERNAME,
-    'password': REDIS_PASSWORD,
-    'decode_responses': True,
-    'socket_connect_timeout': 5,  
-    'socket_timeout': 5,          
-    'retry_on_timeout': True,
-    'health_check_interval': 30   
+    "host": REDIS_HOST,
+    "port": REDIS_PORT,
+    "username": REDIS_USERNAME,
+    "password": REDIS_PASSWORD,
+    "decode_responses": True,
+    "socket_connect_timeout": 5,
+    "socket_timeout": 5,
+    "retry_on_timeout": True,
+    "health_check_interval": 30,
 }
+
 
 @lru_cache()
 def get_redis():
@@ -36,6 +38,7 @@ def get_redis():
     except Exception as e:
         logger.error(f"Failed to create Redis client: {e}")
         raise
+
 
 async def get_redis_async():
     try:
@@ -46,6 +49,7 @@ async def get_redis_async():
     except Exception as e:
         logger.error(f"Failed to create async Redis client: {e}")
         raise
+
 
 async def get_redis_dependency():
     redis_client = None
@@ -59,6 +63,7 @@ async def get_redis_dependency():
         if redis_client:
             await redis_client.close()
 
+
 async def health_check():
     try:
         redis_client = await get_redis_async()
@@ -69,6 +74,7 @@ async def health_check():
         logger.error(f"Redis health check failed: {e}")
         return False
 
+
 async def safe_redis_operation(operation, fallback_value=None):
     try:
         redis_client = await get_redis_async()
@@ -77,7 +83,8 @@ async def safe_redis_operation(operation, fallback_value=None):
         return result
     except Exception as e:
         logger.error(f"Redis operation failed: {e}")
-        return fallback_value  
+        return fallback_value
+
 
 def is_redis_available():
-    return not REDIS_DISABLED 
+    return not REDIS_DISABLED

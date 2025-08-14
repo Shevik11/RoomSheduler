@@ -1,23 +1,26 @@
+import hashlib
+import json
+from typing import List
+
+import redis.asyncio as redis
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import distinct
 from sqlalchemy.orm import Session
-from models.models import Days
+
 from dependencies.database import get_db
 from dependencies.redis import get_redis
-from typing import List
-from sqlalchemy import distinct
-import redis.asyncio as redis
-import json
-import hashlib
+from models.models import Days
 
-router = APIRouter(
-    prefix="/teachers",
-    tags=["teachers"]
-)
+router = APIRouter(prefix="/teachers", tags=["teachers"])
+
 
 def generate_teachers_cache_key(**kwargs):
     # generate cache key
-    params_str = "&".join([f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None])
+    params_str = "&".join(
+        [f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None]
+    )
     return f"teachers_suggestions:{hashlib.sha512(params_str.encode()).hexdigest()}"
+
 
 @router.get("/suggestions/", response_model=List[str])
 async def get_teacher_suggestions(
@@ -43,9 +46,9 @@ async def get_teacher_suggestions(
         namb_of_para=namb_of_para,
         name_of_para=name_of_para,
         room=room,
-        busy=busy
+        busy=busy,
     )
-    
+
     # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
@@ -58,11 +61,16 @@ async def get_teacher_suggestions(
     if name_group:
         db_query = db_query.filter(Days.name_group == name_group)
     if number_of_subgroup:
-        db_query = db_query.filter((Days.number_of_subgroup == number_of_subgroup) | (Days.number_of_subgroup == 0))
+        db_query = db_query.filter(
+            (Days.number_of_subgroup == number_of_subgroup)
+            | (Days.number_of_subgroup == 0)
+        )
     if day_of_week:
         db_query = db_query.filter(Days.day_of_week == day_of_week)
     if nominator:
-        db_query = db_query.filter((Days.nominator == nominator) | (Days.nominator == 'both'))
+        db_query = db_query.filter(
+            (Days.nominator == nominator) | (Days.nominator == "both")
+        )
     if namb_of_para:
         db_query = db_query.filter(Days.namb_of_para == namb_of_para)
     if name_of_para:
@@ -73,32 +81,32 @@ async def get_teacher_suggestions(
         db_query = db_query.filter(Days.busy == busy)
 
     teachers = [teacher[0] for teacher in db_query.all() if teacher[0]]
-    
+
     # save to cache
     await redis_client.setex(cache_key, 600, json.dumps(teachers))
-    
-    return teachers 
+
+    return teachers
 
 
-@router.get('/all/')
+@router.get("/all/")
 async def get_all_teachers(
-    db: Session = Depends(get_db),
-    redis_client: redis.Redis = Depends(get_redis)
+    db: Session = Depends(get_db), redis_client: redis.Redis = Depends(get_redis)
 ):
     cache_key = "teachers_all_teachers"
-    
+
     # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
-    
-    teachers = db.query(distinct(Days.teacher)).filter(Days.teacher != '').all()
+
+    teachers = db.query(distinct(Days.teacher)).filter(Days.teacher != "").all()
     result = [teacher[0] for teacher in teachers]
-    
+
     # save to cache
     await redis_client.setex(cache_key, 1800, json.dumps(result))
-    
+
     return result
+
 
 @router.delete("/cache/clear")
 async def clear_teachers_cache(redis_client: redis.Redis = Depends(get_redis)):

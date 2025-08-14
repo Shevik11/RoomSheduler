@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, PrimaryKeyConstraint
+from sqlalchemy import (Boolean, Column, ForeignKey, Integer,
+                        PrimaryKeyConstraint, String)
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+
 
 class Days(Base):
     __tablename__ = "days_3"
@@ -18,5 +20,7 @@ class Days(Base):
     busy = Column(Boolean)
 
     __table_args__ = (
-        PrimaryKeyConstraint('name_group', 'day_of_week', 'namb_of_para', 'number_of_subgroup'),
+        PrimaryKeyConstraint(
+            "name_group", "day_of_week", "namb_of_para", "number_of_subgroup"
+        ),
     )
