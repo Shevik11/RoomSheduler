@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import httpClient from '../services/httpClient'
-import { DateRangePicker } from '../components/common'
 
 const weekType = ref<string | null>(null)
 const weekStart = ref<string | null>(null)
@@ -250,5 +249,93 @@ const weekTypeDisplay = computed(() => {
   width: 100%;
   max-width: 650px;
   margin: 0 auto;
+}
+
+/* Адаптивні стилі для менших екранів */
+@media (max-width: 768px) {
+  .week-type-display {
+    padding: 1rem;
+    margin: 0.75rem 0;
+  }
+  
+  .week-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .label {
+    font-size: 0.95rem;
+    margin-right: 0;
+  }
+  
+  .week-type-badge {
+    font-size: 0.9rem;
+    margin-left: 0;
+  }
+  
+  .week-dates {
+    font-size: 0.9rem;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .dates-text {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .date-input {
+    width: 120px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .week-type-display {
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+  }
+  
+  .week-info {
+    gap: 0.5rem;
+  }
+  
+  .label {
+    font-size: 0.9rem;
+  }
+  
+  .week-type-badge {
+    font-size: 0.85rem;
+  }
+  
+  .week-dates {
+    font-size: 0.85rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .dates-text {
+    width: 100%;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .date-input {
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .separator {
+    display: none;
+  }
+  
+  .edit-icon, .cancel-icon {
+    font-size: 0.8rem;
+    padding: 0.25rem;
+  }
 }
 </style>

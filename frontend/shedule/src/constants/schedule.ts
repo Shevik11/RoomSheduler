@@ -1,5 +1,5 @@
-export const API_BASE_URL = 'https://backend-roomsheduler.onrender.com';
-// export const API_BASE_URL = 'http://localhost:8000'; // Для локальної розробки
+//export const API_BASE_URL = 'https://backend-roomsheduler.onrender.com';
+ export const API_BASE_URL = 'http://localhost:8000'; // Для локальної розробки
 
 export const DAYS_OF_WEEK = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
 

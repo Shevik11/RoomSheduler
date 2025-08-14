@@ -3,7 +3,7 @@ import type { ScheduleFilters } from '../types/schedule';
 
 class RoomService {
   async getAllRooms(): Promise<string[]> {
-    const response = await httpClient.get('/rooms/suggestions/');
+    const response = await httpClient.get('/rooms/all_rooms/');
     return response.data;
   }
 

@@ -2,12 +2,15 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from models.models import Days
 from dependencies.database import get_db
-from dependencies.redis import get_redis
+from dependencies.redis import get_redis, safe_redis_operation
 from typing import List
 from sqlalchemy import distinct
 import redis.asyncio as redis
 import json
 import hashlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/groups",
@@ -15,9 +18,9 @@ router = APIRouter(
 )
 
 def generate_groups_cache_key(**kwargs):
-    """Генерує ключ для кешу на основі параметрів запиту"""
+    # generate cache key
     params_str = "&".join([f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None])
-    return f"groups_suggestions:{hashlib.md5(params_str.encode()).hexdigest()}"
+    return f"groups_suggestions:{hashlib.sha512(params_str.encode()).hexdigest()}"
 
 @router.get("/suggestions/", response_model=List[str])
 async def get_group_suggestions(
@@ -31,9 +34,8 @@ async def get_group_suggestions(
     teacher: str | None = None,
     busy: bool | None = None,
     db: Session = Depends(get_db),
-    redis_client: redis.Redis = Depends(get_redis),
 ):
-    # Генеруємо ключ кешу
+    # generate cache key
     cache_key = generate_groups_cache_key(
         query=query,
         number_of_subgroup=number_of_subgroup,
@@ -46,11 +48,20 @@ async def get_group_suggestions(
         busy=busy
     )
     
-    # Спробуємо отримати дані з кешу
-    cached_data = await redis_client.get(cache_key)
-    if cached_data:
-        return json.loads(cached_data)
+    # try to get data from cache
+    try:
+        async def get_cached_data(redis_client):
+            return await redis_client.get(cache_key)
+        
+        cached_data = await safe_redis_operation(get_cached_data)
+        if cached_data:
+            logger.info(f"Retrieved groups data from cache for key: {cache_key}")
+            return json.loads(cached_data)
+    except Exception as e:
+        logger.warning(f"Failed to retrieve from cache, falling back to database: {e}")
 
+    # execute query to database
+    logger.info("Fetching groups data from database")
     db_query = db.query(Days.name_group).distinct()
 
     if query:
@@ -74,8 +85,16 @@ async def get_group_suggestions(
 
     groups = [group[0] for group in db_query.all() if group[0]]
     
-    # Зберігаємо в кеш на 10 хвилин
-    await redis_client.setex(cache_key, 600, json.dumps(groups))
+    # try to save to cache
+    try:
+        async def cache_data(redis_client):
+            await redis_client.setex(cache_key, 600, json.dumps(groups))
+            return True
+        
+        await safe_redis_operation(cache_data)
+        logger.info(f"Cached groups data for key: {cache_key}")
+    except Exception as e:
+        logger.warning(f"Failed to cache data, continuing without cache: {e}")
     
     return groups 
 
@@ -87,7 +106,7 @@ async def get_all_groups(
 ):
     cache_key = "groups_all_groups"
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -95,14 +114,14 @@ async def get_all_groups(
     groups = db.query(distinct(Days.name_group)).filter(Days.name_group != '').all()
     result = [group[0] for group in groups]
     
-    # Зберігаємо в кеш на 30 хвилин (довший TTL для статичних даних)
+    # save to cache
     await redis_client.setex(cache_key, 1800, json.dumps(result))
     
     return result
 
 @router.delete("/cache/clear")
 async def clear_groups_cache(redis_client: redis.Redis = Depends(get_redis)):
-    """Очищення кешу для groups"""
+    # clear cache for groups
     keys = await redis_client.keys("groups_suggestions:*")
     all_groups_key = await redis_client.keys("groups_all_groups")
     keys.extend(all_groups_key)

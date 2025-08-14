@@ -12,10 +12,10 @@ import hashlib
 router = APIRouter()
 
 def generate_cache_key(**kwargs):
-    """Генерує ключ для кешу на основі параметрів запиту"""
-    # Створюємо рядок з параметрів для хешування
+    # generate cache key
+    # create string with parameters for hashing
     params_str = "&".join([f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None])
-    return f"days_cache:{hashlib.md5(params_str.encode()).hexdigest()}"
+    return f"days_cache:{hashlib.sha512(params_str.encode()).hexdigest()}"
 
 @router.get("/days/")
 async def get_days(
@@ -32,7 +32,7 @@ async def get_days(
         db: Session = Depends(get_db),
         redis_client: redis.Redis = Depends(get_redis),
 ):
-    # Генеруємо ключ кешу
+    # generate cache key
     cache_key = generate_cache_key(
         name_group=name_group,
         number_of_subgroup=number_of_subgroup,
@@ -46,12 +46,12 @@ async def get_days(
         busy=busy
     )
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
     
-    # Якщо в кеші немає, отримуємо з БД
+    # if not in cache, get from db
     result = fetch_days_by_filters(
         db=db,
         name_group=name_group,
@@ -66,15 +66,15 @@ async def get_days(
         busy=busy
     )
     
-    # Зберігаємо в кеш на 5 хвилин
+    # save to cache
     await redis_client.setex(cache_key, 300, json.dumps(result))
     
     return result
 
 @router.delete("/days/cache/clear")
 async def clear_days_cache(redis_client: redis.Redis = Depends(get_redis)):
-    """Очищення кешу для days"""
-    # Видаляємо всі ключі, що починаються з "days_cache:"
+    # clear cache for days
+    # delete all keys starting with "days_cache:"
     keys = await redis_client.keys("days_cache:*")
     if keys:
         await redis_client.delete(*keys)

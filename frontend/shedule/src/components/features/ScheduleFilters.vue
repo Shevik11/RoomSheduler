@@ -7,7 +7,8 @@
       <FilterDayOfWeek v-model="filters.day_of_week" />
       <FilterNominator v-model="filters.nominator" />
       <FilterParaNumber v-model="filters.namb_of_para" />
-      <div class="filter-buttons">
+      <!-- Десктопні кнопки -->
+      <div class="filter-buttons-desktop">
         <button @click="resetFilters" class="reset-button">Скинути фільтри</button>
         <button @click="applyFilters" class="apply-button">Застосувати</button>
       </div>
@@ -27,13 +28,18 @@
         v-model="filters.busy"
         @change="handleBusyChange"
       />
+      <!-- Мобільні кнопки -->
+      <div class="filter-buttons-mobile">
+        <button @click="resetFilters" class="reset-button">Скинути фільтри</button>
+        <button @click="applyFilters" class="apply-button">Застосувати</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { DAYS_OF_WEEK, DEFAULT_FILTERS } from '../../constants/schedule';
+import {DEFAULT_FILTERS } from '../../constants/schedule';
 import type { ScheduleFilters } from '../../types/schedule.ts';
 import {
   FilterGroup,
@@ -126,6 +132,8 @@ onMounted(() => {
 
 <style scoped>
 .filters-container {
+  display: block;
+  min-height: 420px;
   padding: 1.5rem;
   background-color: #ffffff;
   border-radius: 10px;
@@ -134,6 +142,7 @@ onMounted(() => {
   width: 100%;
   max-width: 1200px;
 }
+
 h3 {
   margin-bottom: 1.5rem;
   color: #1a1a1a;
@@ -141,7 +150,7 @@ h3 {
   font-weight: 600;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 0.75rem;
-  text-align: center; /* Center the heading text */
+  text-align: center;
 }
 
 .filters {
@@ -154,18 +163,19 @@ h3 {
   width: 100%;
 }
 
-.filter-buttons {
+.filter-buttons-desktop {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   grid-column: 5 / 6;
   grid-row: 2;
-  justify-self: center;
-  align-self: center;
-  margin: 0;
-  padding: 0;
-  border: none;
+  align-self: start;
+  justify-self: stretch;
   width: 100%;
+}
+
+.filter-buttons-mobile {
+  display: none;
 }
 
 .filter-item {
@@ -215,11 +225,6 @@ select::-ms-expand {
 /* Safari/Edge/IE: прибираємо стандартний outline і квадратність */
 select:focus-visible {
   outline: none;
-}
-
-/* Додаємо плавне заокруглення для стрілки */
-.filter-select, select {
-  border-radius: 8px;
 }
 
 /* Для Firefox: прибираємо квадратність */
@@ -303,17 +308,57 @@ select option:checked, .filter-select option:checked {
   .filters {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-@media (max-width: 900px) {
-  .filters {
-    grid-template-columns: repeat(2, 1fr);
+  .filter-buttons-desktop {
+    grid-column: 3 / 4;
+    grid-row: 2;
+  }
+  .filters-container {
+    max-width: 900px;
+    padding: 1rem;
+    border-radius: 8px;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1199.99px) {
   .filters {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .filter-buttons-desktop {
+    display: none;
+  }
+  .filter-buttons-mobile {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 1rem;
+    padding-top: 0;
+  }
+  .filters-container {
+    max-width: 98vw;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin: 0.25rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-container {
+    max-width: 100vw;
+    padding: 0.25rem;
+    border-radius: 4px;
+    margin: 0.1rem 0;
+  }
+  .filter-buttons-mobile {
+    flex-direction: row;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 0;
   }
 }
 </style>

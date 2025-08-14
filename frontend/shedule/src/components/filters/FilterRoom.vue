@@ -26,13 +26,12 @@ const props = defineProps<{
   filters: ScheduleFilters;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | null): void;
-}>();
+const emit = defineEmits<(e: 'update:modelValue', value: string | null) => void>();
 
 const roomValue: Ref<string> = ref(props.modelValue || '');
 const suggestions: Ref<string[]> = ref([]);
 const isLoading: Ref<boolean> = ref(false);
+const justSelected: Ref<boolean> = ref(false);
 
 watch(() => props.modelValue, (newValue) => {
   console.log('Model value changed:', newValue);
@@ -46,6 +45,12 @@ const handleInput = async (value: string) => {
   if (!value) {
     suggestions.value = [];
     emit('update:modelValue', null);
+    return;
+  }
+
+
+  if (justSelected.value) {
+    justSelected.value = false;
     return;
   }
 
@@ -75,6 +80,8 @@ watch(() => props.filters, (newFilters) => {
 
 const handleSelect = (value: string) => {
   console.log('Selected room:', value);
+  justSelected.value = true; 
+  roomValue.value = value;
   emit('update:modelValue', value);
   suggestions.value = [];
 };

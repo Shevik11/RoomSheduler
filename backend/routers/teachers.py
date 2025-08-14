@@ -15,9 +15,9 @@ router = APIRouter(
 )
 
 def generate_teachers_cache_key(**kwargs):
-    """Генерує ключ для кешу на основі параметрів запиту"""
+    # generate cache key
     params_str = "&".join([f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None])
-    return f"teachers_suggestions:{hashlib.md5(params_str.encode()).hexdigest()}"
+    return f"teachers_suggestions:{hashlib.sha512(params_str.encode()).hexdigest()}"
 
 @router.get("/suggestions/", response_model=List[str])
 async def get_teacher_suggestions(
@@ -33,7 +33,7 @@ async def get_teacher_suggestions(
     db: Session = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis),
 ):
-    # Генеруємо ключ кешу
+    # generate cache key
     cache_key = generate_teachers_cache_key(
         query=query,
         name_group=name_group,
@@ -46,7 +46,7 @@ async def get_teacher_suggestions(
         busy=busy
     )
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -74,7 +74,7 @@ async def get_teacher_suggestions(
 
     teachers = [teacher[0] for teacher in db_query.all() if teacher[0]]
     
-    # Зберігаємо в кеш на 10 хвилин
+    # save to cache
     await redis_client.setex(cache_key, 600, json.dumps(teachers))
     
     return teachers 
@@ -87,7 +87,7 @@ async def get_all_teachers(
 ):
     cache_key = "teachers_all_teachers"
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -95,14 +95,14 @@ async def get_all_teachers(
     teachers = db.query(distinct(Days.teacher)).filter(Days.teacher != '').all()
     result = [teacher[0] for teacher in teachers]
     
-    # Зберігаємо в кеш на 30 хвилин (довший TTL для статичних даних)
+    # save to cache
     await redis_client.setex(cache_key, 1800, json.dumps(result))
     
     return result
 
 @router.delete("/cache/clear")
 async def clear_teachers_cache(redis_client: redis.Redis = Depends(get_redis)):
-    """Очищення кешу для teachers"""
+    # clear cache for teachers
     keys = await redis_client.keys("teachers_suggestions:*")
     all_teachers_key = await redis_client.keys("teachers_all_teachers")
     keys.extend(all_teachers_key)

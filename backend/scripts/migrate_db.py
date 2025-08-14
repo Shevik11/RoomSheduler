@@ -10,20 +10,20 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{os.getenv('NAME')}:{os.getenv('PASSWOR
 def migrate_database():
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
     
-    # Створюємо резервну копію даних
+    # create backup of data
     with engine.connect() as conn:
-        # Зберігаємо дані
+        # save data
         result = conn.execute(text("SELECT * FROM days_3"))
         data = result.fetchall()
         
-        # Видаляємо стару таблицю
+        # drop old table
         conn.execute(text("DROP TABLE IF EXISTS days_3"))
         conn.commit()
         
-        # Створюємо нову таблицю
+        # create new table
         Base.metadata.create_all(bind=engine)
         
-        # Відновлюємо дані
+        # restore data
         if data:
             columns = result.keys()
             insert_stmt = text(f"""

@@ -17,14 +17,14 @@ router = APIRouter(
 )
 
 def generate_rooms_cache_key(**kwargs):
-    """Генерує ключ для кешу на основі параметрів запиту"""
+    # generate cache key
     params_str = "&".join([f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None])
-    return f"rooms_suggestions:{hashlib.md5(params_str.encode()).hexdigest()}"
+    return f"rooms_suggestions:{hashlib.sha512(params_str.encode()).hexdigest()}"
 
 def generate_busy_rooms_cache_key(**kwargs):
-    """Генерує ключ для кешу зайнятих кімнат"""
+    # generate cache key
     params_str = "&".join([f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None])
-    return f"rooms_busy:{hashlib.md5(params_str.encode()).hexdigest()}"
+    return f"rooms_busy:{hashlib.sha512(params_str.encode()).hexdigest()}"
 
 @router.get('/suggestions/')
 async def get_room_suggestions(
@@ -33,19 +33,21 @@ async def get_room_suggestions(
     day_of_week: str = None,
     nominator: str = None,
     namb_of_para: int = None,
+    teacher: str = None,
     db: Session = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis)
 ):
-    # Генеруємо ключ кешу
+    # generate cache key
     cache_key = generate_rooms_cache_key(
         query=query,
         name_group=name_group,
         day_of_week=day_of_week,
         nominator=nominator,
-        namb_of_para=namb_of_para
+        namb_of_para=namb_of_para,
+        teacher=teacher
     )
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -61,10 +63,12 @@ async def get_room_suggestions(
         q = q.filter((Days.nominator == nominator) | (Days.nominator == 'both'))
     if namb_of_para:
         q = q.filter(Days.namb_of_para == namb_of_para)
+    if teacher:
+        q = q.filter(Days.teacher.ilike(f'%{teacher}%'))
     rooms = q.distinct().all()
     result = [room[0] for room in rooms]
     
-    # Зберігаємо в кеш на 10 хвилин
+    # save to cache
     await redis_client.setex(cache_key, 600, json.dumps(result))
     
     return result
@@ -77,7 +81,7 @@ async def get_all_rooms(
 ):
     cache_key = "rooms_all_rooms"
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return JSONResponse(content=json.loads(cached_data))
@@ -85,7 +89,7 @@ async def get_all_rooms(
     rooms = db.query(Days.room).distinct().all()
     result = [room[0] for room in rooms if room[0]]
     
-    # Зберігаємо в кеш на 30 хвилин
+    # save to cache
     await redis_client.setex(cache_key, 1800, json.dumps(result))
     
     return JSONResponse(content=result)
@@ -103,7 +107,7 @@ async def get_busy_rooms(
     db: Session = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis),
 ):
-    # Генеруємо ключ кешу
+    # generate cache key
     cache_key = generate_busy_rooms_cache_key(
         name_group=name_group,
         number_of_subgroup=number_of_subgroup,
@@ -115,7 +119,7 @@ async def get_busy_rooms(
         teacher=teacher
     )
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return JSONResponse(content=json.loads(cached_data))
@@ -139,7 +143,7 @@ async def get_busy_rooms(
 
     rooms = [room[0] for room in query.all() if room[0]]
     
-    # Зберігаємо в кеш на 5 хвилин (коротший TTL для динамічних даних)
+    # save to cache
     await redis_client.setex(cache_key, 300, json.dumps(rooms))
     
     return JSONResponse(content=rooms)
@@ -151,23 +155,23 @@ async def get_room_schedule(
     db: Session = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis)
 ):
-    cache_key = f"room_schedule:{hashlib.md5(room.encode()).hexdigest()}"
+    cache_key = f"room_schedule:{hashlib.sha512(room.encode()).hexdigest()}"
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
     
     result = fetch_room_schedule(room, db)
     
-    # Зберігаємо в кеш на 10 хвилин
+    # save to cache
     await redis_client.setex(cache_key, 600, json.dumps(result))
     
     return result
 
 @router.delete("/cache/clear")
 async def clear_rooms_cache(redis_client: redis.Redis = Depends(get_redis)):
-    """Очищення кешу для rooms"""
+    # clear cache for rooms
     keys = await redis_client.keys("rooms_suggestions:*")
     busy_keys = await redis_client.keys("rooms_busy:*")
     schedule_keys = await redis_client.keys("room_schedule:*")

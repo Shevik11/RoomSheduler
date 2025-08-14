@@ -1,4 +1,5 @@
 @import './base.css';
+@import './responsive.css';
 
 #app {
   max-width: 1280px;
@@ -31,5 +32,34 @@ a,
     display: grid;
     grid-template-columns: 1fr 1fr;
     padding: 0 2rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  #app {
+    max-width: 100%;
+    padding: 1rem;
+    display: block;
+  }
+  
+  body {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  #app {
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #app {
+    padding: 0.25rem;
+  }
+  
+  a,
+  .green {
+    padding: 2px;
   }
 }

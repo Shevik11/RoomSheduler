@@ -92,4 +92,47 @@ body {
 .fade-leave-to {
   opacity: 0;
 }
+
+/* Адаптивні стилі для менших екранів */
+@media (max-width: 1200px) {
+  #app {
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  #app {
+    margin: 0;
+    padding: 0 0.5rem;
+  }
+  
+  .app-content {
+    padding: 15px;
+  }
+  
+  .main-nav {
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .footer-content {
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #app {
+    padding: 0 0.25rem;
+  }
+  
+  .app-content {
+    padding: 10px;
+  }
+  
+  .main-nav a {
+    font-size: 0.9rem;
+  }
+}
 </style>

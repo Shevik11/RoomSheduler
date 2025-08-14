@@ -1,12 +1,12 @@
 <template>
-  <div>
-    <header>
+  <div class="layout">
+    <header class="layout__header">
       <slot name="header"></slot>
     </header>
-    <main>
+    <main class="layout__main">
       <slot></slot>
     </main>
-    <footer>
+    <footer class="layout__footer">
       <slot name="footer"></slot>
     </footer>
   </div>
@@ -37,5 +37,34 @@
   padding: 1rem;
   background-color: #f8f9fa;
   border-top: 1px solid #dee2e6;
+}
+
+/* Адаптивні стилі для менших екранів */
+@media (max-width: 768px) {
+  .layout__header {
+    padding: 0.75rem;
+  }
+  
+  .layout__main {
+    padding: 0.75rem;
+  }
+  
+  .layout__footer {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout__header {
+    padding: 0.5rem;
+  }
+  
+  .layout__main {
+    padding: 0.5rem;
+  }
+  
+  .layout__footer {
+    padding: 0.5rem;
+  }
 }
 </style> 

@@ -21,12 +21,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: number | null): void;
+  'update:modelValue': [value: number | null];
 }>();
 
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  emit('update:modelValue', value === 'null' ? null : Number(value));
+  emit('update:modelValue', value === '' ? null : Number(value));
 };
 </script>
 

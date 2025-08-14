@@ -80,7 +80,7 @@ const fetchData = async () => {
   try {
     console.log('Fetching data with filters:', filters.value);
     
-    // Якщо немає вибраних фільтрів, не завантажуємо дані
+    // if no filters are selected, do not fetch data
     if (!hasSelectedFilters.value) {
       console.log('No filters selected, clearing data');
       scheduleData.value = [];
@@ -93,7 +93,7 @@ const fetchData = async () => {
       const data = await fetchRoomSchedule(filters.value.room);
       if (data) {
         roomScheduleData.value = data;
-        // Create scheduleData for free periods
+        // create scheduleData for free periods
         const freePeriodsData: ScheduleItem[] = [];
         for (const day in data) {
           data[day].forEach(para => {
@@ -138,12 +138,12 @@ const fetchData = async () => {
   }
 };
 
-// Отримуємо поточний тип тижня
+// get current week type
 const fetchCurrentWeekType = async () => {
   try {
     const response = await httpClient.get('/week-type');
     weekType.value = response.data.week_type;
-    // Якщо фільтр не був вибраний вручну, оновлюємо його
+    // if filter was not selected manually, update it
     if (filters.value.nominator === null) {
       filters.value = {
         ...filters.value,
@@ -158,8 +158,8 @@ const fetchCurrentWeekType = async () => {
 // Load data on start
 onMounted(async () => {
   await fetchCurrentWeekType();
-  // Ініціалізуємо filters.nominator після отримання типу тижня
-  // Пріоритет надаємо props.defaultNominator, якщо він є
+  // initialize filters.nominator after getting week type
+  // priority is given to props.defaultNominator, if it is
   if (props.defaultNominator) {
     filters.value.nominator = props.defaultNominator;
   } else if (weekType.value && filters.value.nominator === null) {
@@ -167,7 +167,7 @@ onMounted(async () => {
   }
 });
 
-// Слідкуємо за зміною типу тижня
+// watch for week type change
 watch(weekType, (newVal) => {
   if (filters.value.nominator === null && newVal) {
     filters.value = {
@@ -177,14 +177,14 @@ watch(weekType, (newVal) => {
   }
 });
 
-// Слідкуємо за зміною defaultNominator
+// watch for defaultNominator change
 watch(() => props.defaultNominator, (newVal) => {
   console.log('DayList received new nominator:', newVal);
-  // Додаємо перевірку, щоб уникнути рекурсивних оновлень
+  // add check to avoid recursive updates
   if (newVal !== filters.value.nominator) {
     filters.value.nominator = newVal;
   }
-}, { immediate: false }); // Змінюємо immediate на false
+}, { immediate: false }); // change immediate to false
 </script>
 
 <style scoped>
@@ -218,5 +218,42 @@ watch(() => props.defaultNominator, (newVal) => {
 .error-icon, .no-data-icon {
   font-size: 32px;
   margin-bottom: 15px;
+}
+
+/* adaptive styles for smaller screens */
+@media (max-width: 768px) {
+  .loading, .error, .no-data {
+    padding: 15px;
+    min-height: 80px;
+  }
+  
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+  
+  .error-icon, .no-data-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loading, .error, .no-data {
+    padding: 10px;
+    min-height: 60px;
+  }
+  
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
+  }
+  
+  .error-icon, .no-data-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
 }
 </style>

@@ -15,9 +15,9 @@ router = APIRouter(
 )
 
 def generate_lessons_cache_key(**kwargs):
-    """Генерує ключ для кешу на основі параметрів запиту"""
+    # generate cache key
     params_str = "&".join([f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None])
-    return f"lessons_suggestions:{hashlib.md5(params_str.encode()).hexdigest()}"
+    return f"lessons_suggestions:{hashlib.sha512(params_str.encode()).hexdigest()}"
 
 @router.get("/suggestions/", response_model=List[str])
 async def get_lesson_suggestions(
@@ -33,7 +33,7 @@ async def get_lesson_suggestions(
     db: Session = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis),
 ):
-    # Генеруємо ключ кешу
+    # generate cache key
     cache_key = generate_lessons_cache_key(
         query=query,
         name_group=name_group,
@@ -46,7 +46,7 @@ async def get_lesson_suggestions(
         busy=busy
     )
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -74,7 +74,7 @@ async def get_lesson_suggestions(
 
     lessons = [lesson[0] for lesson in db_query.all() if lesson[0]]
     
-    # Зберігаємо в кеш на 10 хвилин
+    # save to cache
     await redis_client.setex(cache_key, 600, json.dumps(lessons))
     
     return lessons 
@@ -87,7 +87,7 @@ async def get_all_subjects(
 ):
     cache_key = "lessons_all_subjects"
     
-    # Спробуємо отримати дані з кешу
+    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -95,14 +95,14 @@ async def get_all_subjects(
     subjects = db.query(distinct(Days.name_of_para)).filter(Days.name_of_para != '').all()
     result = [subject[0] for subject in subjects]
     
-    # Зберігаємо в кеш на 30 хвилин (довший TTL для статичних даних)
+    # save to cache
     await redis_client.setex(cache_key, 1800, json.dumps(result))
     
     return result
 
 @router.delete("/cache/clear")
 async def clear_lessons_cache(redis_client: redis.Redis = Depends(get_redis)):
-    """Очищення кешу для lessons"""
+    # clear cache for lessons
     keys = await redis_client.keys("lessons_suggestions:*")
     all_subjects_key = await redis_client.keys("lessons_all_subjects")
     keys.extend(all_subjects_key)

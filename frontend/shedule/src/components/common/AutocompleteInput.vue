@@ -73,8 +73,11 @@ const handleBlur = () => {
 };
 
 watch(() => props.suggestions, (newSuggestions) => {
-  if (newSuggestions.length > 0) {
+
+  if (newSuggestions.length > 0 && inputValue.value && document.activeElement?.id === props.id) {
     showSuggestions.value = true;
+  } else if (newSuggestions.length === 0) {
+    showSuggestions.value = false;
   }
 });
 
@@ -147,5 +150,40 @@ const hasValue = computed(() => !!inputValue.value);
 .suggestion-item.no-results {
   color: #666;
   cursor: default;
+}
+
+/* Адаптивні стилі для менших екранів */
+@media (max-width: 768px) {
+  .filter-input {
+    padding: 6px 10px;
+    font-size: 13px;
+    height: 32px;
+  }
+  
+  .suggestion-item {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .suggestions-list {
+    max-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-input {
+    padding: 5px 8px;
+    font-size: 12px;
+    height: 30px;
+  }
+  
+  .suggestion-item {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  
+  .suggestions-list {
+    max-height: 160px;
+  }
 }
 </style> 

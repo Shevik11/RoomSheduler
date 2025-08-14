@@ -28,12 +28,13 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | null): void;
+  'update:modelValue': [value: string | null];
 }>();
 
 const teacherValue: Ref<string> = ref(props.modelValue || '');
 const suggestions: Ref<string[]> = ref([]);
 const isLoading: Ref<boolean> = ref(false);
+const justSelected: Ref<boolean> = ref(false);
 
 watch(() => props.modelValue, (newValue: string | null) => {
   teacherValue.value = newValue || '';
@@ -42,9 +43,18 @@ watch(() => props.modelValue, (newValue: string | null) => {
 const handleInput = async (value: string) => {
   if (!value) {
     suggestions.value = [];
+    emit('update:modelValue', null);
     return;
   }
 
+  // Не шукаємо підказки відразу після вибору елемента
+  if (justSelected.value) {
+    justSelected.value = false;
+    return;
+  }
+
+  emit('update:modelValue', value);
+  
   isLoading.value = true;
   try {
     suggestions.value = await scheduleService.getTeacherSuggestions(value, props.filters);
@@ -57,7 +67,10 @@ const handleInput = async (value: string) => {
 };
 
 const handleSelect = (value: string) => {
-  emit('update:modelValue', value);
+  justSelected.value = true;
+  teacherValue.value = value;
+  emit('update:modelValue', value || null);
+  suggestions.value = [];
 };
 </script>
 
