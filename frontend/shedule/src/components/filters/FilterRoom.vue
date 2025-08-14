@@ -15,39 +15,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
-import type { Ref } from 'vue';
-import AutocompleteInput from '../common/AutocompleteInput.vue';
-import scheduleService from '../../services/scheduleService';
-import type { ScheduleFilters } from '../../types/schedule';
+import { ref, watch, nextTick } from "vue";
+import type { Ref } from "vue";
+import AutocompleteInput from "../common/AutocompleteInput.vue";
+import scheduleService from "../../services/scheduleService";
+import type { ScheduleFilters } from "../../types/schedule";
 
 const props = defineProps<{
   modelValue: string | null;
   filters: ScheduleFilters;
 }>();
 
-const emit = defineEmits<(e: 'update:modelValue', value: string | null) => void>();
+const emit =
+  defineEmits<(e: "update:modelValue", value: string | null) => void>();
 
-const roomValue: Ref<string> = ref(props.modelValue || '');
+const roomValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);
 const isLoading: Ref<boolean> = ref(false);
 const justSelected: Ref<boolean> = ref(false);
 
-watch(() => props.modelValue, (newValue) => {
-  console.log('Model value changed:', newValue);
-  roomValue.value = newValue || '';
-  if (newValue) {
-    handleInput(newValue);
-  }
-});
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    console.log("Model value changed:", newValue);
+    roomValue.value = newValue || "";
+    if (newValue) {
+      handleInput(newValue);
+    }
+  },
+);
 
 const handleInput = async (value: string) => {
   if (!value) {
     suggestions.value = [];
-    emit('update:modelValue', null);
+    emit("update:modelValue", null);
     return;
   }
-
 
   if (justSelected.value) {
     justSelected.value = false;
@@ -57,32 +60,39 @@ const handleInput = async (value: string) => {
   isLoading.value = true;
   try {
     suggestions.value = [];
-    console.log('Fetching room suggestions with filters:', props.filters);
-    const newSuggestions = await scheduleService.getRoomSuggestions(value, props.filters);
-    console.log('Got room suggestions:', newSuggestions);
+    console.log("Fetching room suggestions with filters:", props.filters);
+    const newSuggestions = await scheduleService.getRoomSuggestions(
+      value,
+      props.filters,
+    );
+    console.log("Got room suggestions:", newSuggestions);
     suggestions.value = newSuggestions;
   } catch (error) {
-    console.error('Error fetching room suggestions:', error);
+    console.error("Error fetching room suggestions:", error);
     suggestions.value = [];
   } finally {
     isLoading.value = false;
   }
 };
 
-watch(() => props.filters, (newFilters) => {
-  console.log('Filters changed:', newFilters);
-  if (roomValue.value && roomValue.value.trim()) {
-    nextTick(() => {
-      handleInput(roomValue.value);
-    });
-  }
-}, { deep: true, flush: 'post' });
+watch(
+  () => props.filters,
+  (newFilters) => {
+    console.log("Filters changed:", newFilters);
+    if (roomValue.value && roomValue.value.trim()) {
+      nextTick(() => {
+        handleInput(roomValue.value);
+      });
+    }
+  },
+  { deep: true, flush: "post" },
+);
 
 const handleSelect = (value: string) => {
-  console.log('Selected room:', value);
-  justSelected.value = true; 
+  console.log("Selected room:", value);
+  justSelected.value = true;
   roomValue.value = value;
-  emit('update:modelValue', value);
+  emit("update:modelValue", value);
   suggestions.value = [];
 };
 </script>
@@ -111,7 +121,7 @@ const handleSelect = (value: string) => {
   font-size: 14px;
   color: #2c3e50 !important;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .filter-select:focus {
@@ -127,4 +137,4 @@ const handleSelect = (value: string) => {
   border-color: #e57373;
   box-shadow: 0 0 0 2px #e5737333;
 }
-</style> 
+</style>

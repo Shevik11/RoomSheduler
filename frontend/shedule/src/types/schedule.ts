@@ -31,4 +31,4 @@ export interface RoomSchedule {
     time: string;
     status: string;
   }[];
-} 
+}

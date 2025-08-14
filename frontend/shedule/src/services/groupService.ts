@@ -1,10 +1,10 @@
-import httpClient from './httpClient';
-import cache from '../utils/cache';
-import { storage } from '../utils/storage';
+import httpClient from "./httpClient";
+import cache from "../utils/cache";
+import { storage } from "../utils/storage";
 
 const CACHE_KEYS = {
-  ALL_GROUPS: 'all_groups',
-  GROUP_SUGGESTIONS: 'group_suggestions_'
+  ALL_GROUPS: "all_groups",
+  GROUP_SUGGESTIONS: "group_suggestions_",
 };
 
 class GroupService {
@@ -21,7 +21,7 @@ class GroupService {
     }
 
     // Якщо немає в кеші і сховищі, робимо запит
-    const response = await httpClient.get('/groups/');
+    const response = await httpClient.get("/groups/");
     const data = response.data;
 
     // Зберігаємо в кеш і сховище
@@ -33,14 +33,14 @@ class GroupService {
 
   async getGroupSuggestions(query: string): Promise<string[]> {
     const cacheKey = `${CACHE_KEYS.GROUP_SUGGESTIONS}${query}`;
-    
+
     // Перевіряємо кеш
     const cachedData = cache.get<string[]>(cacheKey);
     if (cachedData) return cachedData;
 
     // Робимо запит
-    const response = await httpClient.get('/groups/suggestions/', {
-      params: { query }
+    const response = await httpClient.get("/groups/suggestions/", {
+      params: { query },
     });
     const data = response.data;
 
@@ -51,4 +51,4 @@ class GroupService {
   }
 }
 
-export default new GroupService(); 
+export default new GroupService();

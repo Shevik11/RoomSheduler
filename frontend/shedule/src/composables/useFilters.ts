@@ -1,6 +1,6 @@
-import { ref } from 'vue';
-import scheduleService from '../services/scheduleService';
-import type { ScheduleFilters } from '../types/schedule';
+import { ref } from "vue";
+import scheduleService from "../services/scheduleService";
+import type { ScheduleFilters } from "../types/schedule";
 
 // Cache interface
 interface Cache {
@@ -45,7 +45,7 @@ export function useFilters() {
   // Check if cache is valid
   const isCacheValid = (cache: Cache, key: string): boolean => {
     const cached = cache[key];
-    return cached && (Date.now() - cached.timestamp) < CACHE_EXPIRATION;
+    return cached && Date.now() - cached.timestamp < CACHE_EXPIRATION;
   };
 
   // Load all data on mount
@@ -67,7 +67,7 @@ export function useFilters() {
       const teachers = await scheduleService.getAllTeachers();
       allTeachers.value = Array.isArray(teachers) ? teachers : [];
     } catch (err) {
-      console.error('Error loading initial data:', err);
+      console.error("Error loading initial data:", err);
     }
   };
 
@@ -92,14 +92,20 @@ export function useFilters() {
   };
 
   // Предмети
-  const handleSubjectInput = async (input: string, filters: ScheduleFilters) => {
+  const handleSubjectInput = async (
+    input: string,
+    filters: ScheduleFilters,
+  ) => {
     if (!input) {
       filteredSubjects.value = [];
       return;
     }
     isFetchingSubjects.value = true;
     try {
-      const suggestions = await scheduleService.getSubjectSuggestions(input, filters);
+      const suggestions = await scheduleService.getSubjectSuggestions(
+        input,
+        filters,
+      );
       filteredSubjects.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
       filteredSubjects.value = [];
@@ -116,7 +122,10 @@ export function useFilters() {
     }
     isFetchingRooms.value = true;
     try {
-      const suggestions = await scheduleService.getRoomSuggestions(input, filters);
+      const suggestions = await scheduleService.getRoomSuggestions(
+        input,
+        filters,
+      );
       filteredRooms.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
       filteredRooms.value = [];
@@ -126,14 +135,20 @@ export function useFilters() {
   };
 
   // Викладачі
-  const handleTeacherInput = async (input: string, filters: ScheduleFilters) => {
+  const handleTeacherInput = async (
+    input: string,
+    filters: ScheduleFilters,
+  ) => {
     if (!input) {
       filteredTeachers.value = [];
       return;
     }
     isFetchingTeachers.value = true;
     try {
-      const suggestions = await scheduleService.getTeacherSuggestions(input, filters);
+      const suggestions = await scheduleService.getTeacherSuggestions(
+        input,
+        filters,
+      );
       filteredTeachers.value = Array.isArray(suggestions) ? suggestions : [];
     } catch (err) {
       filteredTeachers.value = [];
@@ -158,6 +173,6 @@ export function useFilters() {
     handleGroupInput,
     handleSubjectInput,
     handleRoomInput,
-    handleTeacherInput
+    handleTeacherInput,
   };
-} 
+}

@@ -9,28 +9,20 @@
       <FilterParaNumber v-model="filters.namb_of_para" />
       <!-- Десктопні кнопки -->
       <div class="filter-buttons-desktop">
-        <button @click="resetFilters" class="reset-button">Скинути фільтри</button>
+        <button @click="resetFilters" class="reset-button">
+          Скинути фільтри
+        </button>
         <button @click="applyFilters" class="apply-button">Застосувати</button>
       </div>
-      <FilterSubject 
-        v-model="filters.name_of_para"
-        :filters="filters"
-      />
-      <FilterRoom 
-        v-model="filters.room"
-        :filters="filters"
-      />
-      <FilterTeacher 
-        v-model="filters.teacher"
-        :filters="filters"
-      />
-      <FilterBusy 
-        v-model="filters.busy"
-        @change="handleBusyChange"
-      />
+      <FilterSubject v-model="filters.name_of_para" :filters="filters" />
+      <FilterRoom v-model="filters.room" :filters="filters" />
+      <FilterTeacher v-model="filters.teacher" :filters="filters" />
+      <FilterBusy v-model="filters.busy" @change="handleBusyChange" />
       <!-- Мобільні кнопки -->
       <div class="filter-buttons-mobile">
-        <button @click="resetFilters" class="reset-button">Скинути фільтри</button>
+        <button @click="resetFilters" class="reset-button">
+          Скинути фільтри
+        </button>
         <button @click="applyFilters" class="apply-button">Застосувати</button>
       </div>
     </div>
@@ -38,20 +30,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
-import {DEFAULT_FILTERS } from '../../constants/schedule';
-import type { ScheduleFilters } from '../../types/schedule.ts';
+import { ref, watch, onMounted } from "vue";
+import { DEFAULT_FILTERS } from "../../constants/schedule";
+import type { ScheduleFilters } from "../../types/schedule.ts";
 import {
   FilterGroup,
   FilterSubject,
   FilterTeacher,
   FilterRoom,
-} from '../filters';
-import FilterBusy from '../filters/FilterBusy.vue';
-import FilterDayOfWeek from '../filters/FilterDayOfWeek.vue';
-import FilterNominator from '../filters/FilterNominator.vue';
-import FilterParaNumber from '../filters/FilterParaNumber.vue';
-import FilterSubgroup from '../filters/FilterSubgroup.vue';
+} from "../filters";
+import FilterBusy from "../filters/FilterBusy.vue";
+import FilterDayOfWeek from "../filters/FilterDayOfWeek.vue";
+import FilterNominator from "../filters/FilterNominator.vue";
+import FilterParaNumber from "../filters/FilterParaNumber.vue";
+import FilterSubgroup from "../filters/FilterSubgroup.vue";
 
 const props = defineProps<{
   modelValue: ScheduleFilters;
@@ -59,73 +51,87 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: ScheduleFilters): void;
-  (e: 'apply'): void;
+  (e: "update:modelValue", value: ScheduleFilters): void;
+  (e: "apply"): void;
 }>();
 
 const filters = ref<ScheduleFilters>({ ...props.modelValue });
 
-watch(() => props.modelValue, (newValue) => {
-  filters.value = { ...newValue };
-});
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    filters.value = { ...newValue };
+  },
+);
 
 // Завжди оновлюємо фільтр при зміні defaultNominator
-watch(() => props.defaultNominator, (newVal) => {
-  console.log('ScheduleFilters updating nominator to:', newVal);
-  // Перевіряємо, чи дійсно потрібно оновлювати
-  if (newVal !== filters.value.nominator) {
-    filters.value.nominator = newVal;
-    emit('update:modelValue', filters.value);
-  }
-}, { immediate: false }); // Змінюємо immediate на false
+watch(
+  () => props.defaultNominator,
+  (newVal) => {
+    console.log("ScheduleFilters updating nominator to:", newVal);
+    // Перевіряємо, чи дійсно потрібно оновлювати
+    if (newVal !== filters.value.nominator) {
+      filters.value.nominator = newVal;
+      emit("update:modelValue", filters.value);
+    }
+  },
+  { immediate: false },
+); // Змінюємо immediate на false
 
 const handleBusyChange = () => {
   if (filters.value.busy === true) {
-    filters.value.room = '';
+    filters.value.room = "";
   }
 };
 
 const applyFilters = () => {
   // Створюємо копію фільтрів, щоб не втратити реактивність
   const updatedFilters = { ...filters.value };
-  
+
   // Оновлюємо батьківський компонент
-  emit('update:modelValue', updatedFilters);
-  
+  emit("update:modelValue", updatedFilters);
+
   // Викликаємо подію apply
-  emit('apply');
-  
+  emit("apply");
+
   // Оновлюємо локальні фільтри
   filters.value = updatedFilters;
 };
 
 // Додаємо спостереження за змінами фільтрів
-watch(filters, (newFilters) => {
-  // Оновлюємо батьківський компонент при кожній зміні фільтрів
-  // Але тільки якщо це не зміна nominator через defaultNominator
-  emit('update:modelValue', { ...newFilters });
-}, { deep: true, flush: 'post' }); // Додаємо flush: 'post' для уникнення рекурсії
+watch(
+  filters,
+  (newFilters) => {
+    // Оновлюємо батьківський компонент при кожній зміні фільтрів
+    // Але тільки якщо це не зміна nominator через defaultNominator
+    emit("update:modelValue", { ...newFilters });
+  },
+  { deep: true, flush: "post" },
+); // Додаємо flush: 'post' для уникнення рекурсії
 
 // При скиданні фільтрів беремо поточне значення з WeekTypeDisplay
 const resetFilters = () => {
   // Створюємо нові фільтри з поточним значенням номінатора
-  const newFilters = { 
+  const newFilters = {
     ...DEFAULT_FILTERS,
-    nominator: props.defaultNominator 
+    nominator: props.defaultNominator,
   };
-  
+
   // Оновлюємо локальні фільтри
   filters.value = newFilters;
-  
+
   // Оновлюємо батьківський компонент
-  emit('update:modelValue', newFilters);
+  emit("update:modelValue", newFilters);
 };
 
 // Ініціалізуємо nominator при монтуванні компонента
 onMounted(() => {
-  if (props.defaultNominator && filters.value.nominator !== props.defaultNominator) {
+  if (
+    props.defaultNominator &&
+    filters.value.nominator !== props.defaultNominator
+  ) {
     filters.value.nominator = props.defaultNominator;
-    emit('update:modelValue', filters.value);
+    emit("update:modelValue", filters.value);
   }
 });
 </script>
@@ -137,7 +143,9 @@ onMounted(() => {
   padding: 1.5rem;
   background-color: #ffffff;
   border-radius: 10px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   margin: 1rem 0;
   width: 100%;
   max-width: 1200px;
@@ -193,7 +201,8 @@ label {
   text-align: center; /* Center the label text */
 }
 
-.filter-select, select {
+.filter-select,
+select {
   width: 100%;
   padding: 10px 36px 10px 12px;
   border: 1.5px solid #d32f2f;
@@ -202,7 +211,10 @@ label {
   color: #2c3e50;
   font-size: 15px;
   font-weight: 500;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -211,7 +223,7 @@ label {
   background-repeat: no-repeat;
   background-position: right 1rem top 55%;
   background-size: 1.2rem auto;
-  box-shadow: 0 2px 8px rgba(211,47,47,0.08);
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.08);
   outline: none;
   box-sizing: border-box;
   height: 40px;
@@ -234,7 +246,8 @@ select:-moz-focusring {
 }
 
 /* Style for options within the select dropdown */
-select option, .filter-select option {
+select option,
+.filter-select option {
   font-weight: 500;
   color: #2c3e50;
   background: #fff;
@@ -242,12 +255,14 @@ select option, .filter-select option {
 }
 
 /* Style for options when hovered */
-select option:hover, .filter-select option:hover {
+select option:hover,
+.filter-select option:hover {
   background-color: #f5f5f5;
 }
 
 /* Style for options when selected */
-select option:checked, .filter-select option:checked {
+select option:checked,
+.filter-select option:checked {
   background-color: #e0e0e0;
 }
 
@@ -261,7 +276,7 @@ select option:checked, .filter-select option:checked {
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .reset-button {

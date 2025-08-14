@@ -9,18 +9,28 @@
   .container {
     padding: 0 0.5rem;
   }
-  
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.3rem; }
-  h3 { font-size: 1.1rem; }
-  h4 { font-size: 1rem; }
-  
+
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.3rem;
+  }
+  h3 {
+    font-size: 1.1rem;
+  }
+  h4 {
+    font-size: 1rem;
+  }
+
   button {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }
-  
-  input, select, textarea {
+
+  input,
+  select,
+  textarea {
     font-size: 0.9rem;
     padding: 0.5rem;
   }
@@ -30,18 +40,28 @@
   .container {
     padding: 0 0.25rem;
   }
-  
-  h1 { font-size: 1.3rem; }
-  h2 { font-size: 1.1rem; }
-  h3 { font-size: 1rem; }
-  h4 { font-size: 0.9rem; }
-  
+
+  h1 {
+    font-size: 1.3rem;
+  }
+  h2 {
+    font-size: 1.1rem;
+  }
+  h3 {
+    font-size: 1rem;
+  }
+  h4 {
+    font-size: 0.9rem;
+  }
+
   button {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
   }
-  
-  input, select, textarea {
+
+  input,
+  select,
+  textarea {
     font-size: 0.85rem;
     padding: 0.4rem;
   }
@@ -59,7 +79,7 @@
   .hide-mobile {
     display: none;
   }
-  
+
   .show-mobile {
     display: block;
   }
@@ -117,4 +137,4 @@
   .table-responsive table {
     min-width: 300px;
   }
-} 
+}

@@ -1,1 +1,2 @@
-import { FilterGroup, FilterSubject, FilterTeacher, FilterRoom } from './filters'; 
+import { FilterGroup, FilterSubject, FilterTeacher, FilterRoom } from
+'./filters';

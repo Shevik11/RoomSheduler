@@ -15,30 +15,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { Ref } from 'vue';
-import AutocompleteInput from '../common/AutocompleteInput.vue';
-import scheduleService from '../../services/scheduleService';
-import { debounce } from '../../utils/debounce';
-import groupService from '../../services/groupService';
+import { ref, watch } from "vue";
+import type { Ref } from "vue";
+import AutocompleteInput from "../common/AutocompleteInput.vue";
+import scheduleService from "../../services/scheduleService";
+import { debounce } from "../../utils/debounce";
+import groupService from "../../services/groupService";
 
 const props = defineProps<{
   modelValue: string;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
+  (e: "update:modelValue", value: string): void;
 }>();
 
-const groupValue: Ref<string> = ref(props.modelValue || '');
+const groupValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);
 const isLoading: Ref<boolean> = ref(false);
 const showSuggestions = ref(false);
 const isFetching = ref(false);
 
-watch(() => props.modelValue, (newValue: string | null) => {
-  groupValue.value = newValue || '';
-});
+watch(
+  () => props.modelValue,
+  (newValue: string | null) => {
+    groupValue.value = newValue || "";
+  },
+);
 
 // Створюємо дебаунсовану функцію пошуку
 const debouncedSearch = debounce(async (query: string) => {
@@ -51,7 +54,7 @@ const debouncedSearch = debounce(async (query: string) => {
   try {
     suggestions.value = await groupService.getGroupSuggestions(query);
   } catch (error) {
-    console.error('Error fetching group suggestions:', error);
+    console.error("Error fetching group suggestions:", error);
     suggestions.value = [];
   } finally {
     isFetching.value = false;
@@ -59,12 +62,12 @@ const debouncedSearch = debounce(async (query: string) => {
 }, 300); // 300ms затримка
 
 const handleInput = (value: string) => {
-  emit('update:modelValue', value);
+  emit("update:modelValue", value);
   debouncedSearch(value);
 };
 
 const handleSelect = (value: string) => {
-  emit('update:modelValue', value);
+  emit("update:modelValue", value);
 };
 </script>
 
@@ -92,7 +95,7 @@ const handleSelect = (value: string) => {
   font-size: 14px;
   color: #2c3e50 !important;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .filter-select:focus {
@@ -103,4 +106,4 @@ const handleSelect = (value: string) => {
 .filter-select {
   color: #2c3e50 !important;
 }
-</style> 
+</style>

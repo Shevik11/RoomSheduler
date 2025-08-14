@@ -16,11 +16,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { Ref } from 'vue';
-import AutocompleteInput from '../common/AutocompleteInput.vue';
-import scheduleService from '../../services/scheduleService';
-import type { ScheduleFilters } from '../../types/schedule';
+import { ref, watch } from "vue";
+import type { Ref } from "vue";
+import AutocompleteInput from "../common/AutocompleteInput.vue";
+import scheduleService from "../../services/scheduleService";
+import type { ScheduleFilters } from "../../types/schedule";
 
 const props = defineProps<{
   modelValue: string | null;
@@ -28,22 +28,25 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | null];
+  "update:modelValue": [value: string | null];
 }>();
 
-const teacherValue: Ref<string> = ref(props.modelValue || '');
+const teacherValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);
 const isLoading: Ref<boolean> = ref(false);
 const justSelected: Ref<boolean> = ref(false);
 
-watch(() => props.modelValue, (newValue: string | null) => {
-  teacherValue.value = newValue || '';
-});
+watch(
+  () => props.modelValue,
+  (newValue: string | null) => {
+    teacherValue.value = newValue || "";
+  },
+);
 
 const handleInput = async (value: string) => {
   if (!value) {
     suggestions.value = [];
-    emit('update:modelValue', null);
+    emit("update:modelValue", null);
     return;
   }
 
@@ -53,13 +56,16 @@ const handleInput = async (value: string) => {
     return;
   }
 
-  emit('update:modelValue', value);
-  
+  emit("update:modelValue", value);
+
   isLoading.value = true;
   try {
-    suggestions.value = await scheduleService.getTeacherSuggestions(value, props.filters);
+    suggestions.value = await scheduleService.getTeacherSuggestions(
+      value,
+      props.filters,
+    );
   } catch (error) {
-    console.error('Error fetching teacher suggestions:', error);
+    console.error("Error fetching teacher suggestions:", error);
     suggestions.value = [];
   } finally {
     isLoading.value = false;
@@ -69,7 +75,7 @@ const handleInput = async (value: string) => {
 const handleSelect = (value: string) => {
   justSelected.value = true;
   teacherValue.value = value;
-  emit('update:modelValue', value || null);
+  emit("update:modelValue", value || null);
   suggestions.value = [];
 };
 </script>
@@ -98,7 +104,7 @@ const handleSelect = (value: string) => {
   font-size: 14px;
   color: #2c3e50 !important;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .filter-select:focus {
@@ -109,4 +115,4 @@ const handleSelect = (value: string) => {
 .filter-select {
   color: #2c3e50 !important;
 }
-</style> 
+</style>

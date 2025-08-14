@@ -1,5 +1,5 @@
-@import './base.css';
-@import './responsive.css';
+@import "./base.css";
+@import "./responsive.css";
 
 #app {
   max-width: 1280px;
@@ -41,7 +41,7 @@ a,
     padding: 1rem;
     display: block;
   }
-  
+
   body {
     display: block;
   }
@@ -57,7 +57,7 @@ a,
   #app {
     padding: 0.25rem;
   }
-  
+
   a,
   .green {
     padding: 2px;

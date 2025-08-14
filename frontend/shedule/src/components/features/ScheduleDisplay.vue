@@ -4,14 +4,16 @@
       <h4 v-if="hasDayInSchedule(day)" class="day-title">{{ day }}</h4>
 
       <div v-if="!showFreeScheduleGrid" class="schedule">
-        <div 
-          v-for="item in filterByDay(day)" 
-          :key="`${item.key}`" 
-          :class="['schedule-item', {'busy': item.busy}]"
+        <div
+          v-for="item in filterByDay(day)"
+          :key="`${item.key}`"
+          :class="['schedule-item', { busy: item.busy }]"
         >
           <div class="item-header">
-            <span class="item-group">{{ item.groups.join(', ') }}</span>
-            <span v-if="item.number_of_subgroup" class="item-subgroup">(підгрупа {{ item.number_of_subgroup }})</span>
+            <span class="item-group">{{ item.groups.join(", ") }}</span>
+            <span v-if="item.number_of_subgroup" class="item-subgroup"
+              >(підгрупа {{ item.number_of_subgroup }})</span
+            >
           </div>
 
           <div class="item-details">
@@ -23,7 +25,9 @@
             <div class="item-subject">{{ item.name_of_para }}</div>
 
             <div class="item-location">
-              <span v-if="item.room" class="item-room">Аудиторія: {{ item.room }}</span>
+              <span v-if="item.room" class="item-room"
+                >Аудиторія: {{ item.room }}</span
+              >
             </div>
 
             <div class="item-teacher" v-if="item.teacher">
@@ -36,22 +40,22 @@
 
             <div class="item-status">
               <span :class="item.busy ? 'status-busy' : 'status-free'">
-                {{ item.busy ? 'Зайнято' : 'Вільно' }}
+                {{ item.busy ? "Зайнято" : "Вільно" }}
               </span>
             </div>
 
             <!-- Кнопка детальної інформації -->
             <div class="item-actions">
-              <button 
-                @click="showDetails(item)" 
+              <button
+                @click="showDetails(item)"
                 class="details-btn"
                 type="button"
                 v-if="shouldShowDetailsButton"
               >
                 Інформація про аудиторію
               </button>
-              <button 
-                @click="showBookingForm(item)" 
+              <button
+                @click="showBookingForm(item)"
                 class="booking-btn"
                 type="button"
                 v-if="shouldShowDetailsButton"
@@ -71,11 +75,11 @@
           <div class="grid-cell">Статус</div>
           <div class="grid-cell">Дії</div>
         </div>
-        <div 
-          v-for="para in 8" 
-          :key="para" 
+        <div
+          v-for="para in 8"
+          :key="para"
           class="grid-row"
-          :class="{'free-para': isParaFree(day, para)}"
+          :class="{ 'free-para': isParaFree(day, para) }"
         >
           <div class="grid-cell">{{ para }}</div>
           <div class="grid-cell">{{ getParaTime(para) }}</div>
@@ -84,16 +88,16 @@
             <span v-else class="status-busy">Зайнято</span>
           </div>
           <div class="grid-cell">
-            <button 
-              @click="showFreeParaDetails(day, para)" 
+            <button
+              @click="showFreeParaDetails(day, para)"
               class="details-btn-small"
               type="button"
               v-if="shouldShowDetailsButton"
             >
               Інформація
             </button>
-            <button 
-              @click="showBookingFormForFreePara(day, para)" 
+            <button
+              @click="showBookingFormForFreePara(day, para)"
               class="booking-btn-small"
               type="button"
               v-if="shouldShowDetailsButton"
@@ -120,7 +124,7 @@
                 <strong>Аудиторія:</strong> {{ selectedItem.room }}
               </div>
               <div v-else class="detail-row">
-                <strong>Аудиторія:</strong> 
+                <strong>Аудиторія:</strong>
                 <span class="no-data">Не вказано</span>
               </div>
               <div class="detail-row">
@@ -136,9 +140,11 @@
                 <strong>Предмет:</strong> {{ selectedItem.name_of_para }}
               </div>
               <div class="detail-row">
-                <strong>Статус:</strong> 
-                <span :class="selectedItem.busy ? 'status-busy' : 'status-free'">
-                  {{ selectedItem.busy ? 'Зайнято' : 'Вільно' }}
+                <strong>Статус:</strong>
+                <span
+                  :class="selectedItem.busy ? 'status-busy' : 'status-free'"
+                >
+                  {{ selectedItem.busy ? "Зайнято" : "Вільно" }}
                 </span>
               </div>
             </div>
@@ -151,7 +157,11 @@
     </div>
 
     <!-- Модальне вікно з формою бронювання -->
-    <div v-if="showBookingModal" class="modal-overlay" @click="closeBookingModal">
+    <div
+      v-if="showBookingModal"
+      class="modal-overlay"
+      @click="closeBookingModal"
+    >
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>Бронювання аудиторії</h3>
@@ -161,43 +171,41 @@
           <form @submit.prevent="submitBooking" class="booking-form">
             <div class="form-group">
               <label for="booking-purpose">Мета:</label>
-              <input 
+              <input
                 id="booking-purpose"
-                v-model="bookingForm.purpose" 
-                type="text" 
+                v-model="bookingForm.purpose"
+                type="text"
                 placeholder="Введіть мету бронювання"
                 required
                 class="form-input"
               />
             </div>
-            
+
             <div class="form-group">
               <label for="booking-teacher">Викладач:</label>
-              <input 
+              <input
                 id="booking-teacher"
-                v-model="bookingForm.teacher" 
-                type="text" 
+                v-model="bookingForm.teacher"
+                type="text"
                 placeholder="Введіть ім'я викладача"
                 required
                 class="form-input"
               />
             </div>
-            
+
             <div class="form-group">
               <label for="booking-date">Дата:</label>
-              <input 
+              <input
                 id="booking-date"
-                v-model="bookingForm.date" 
-                type="date" 
+                v-model="bookingForm.date"
+                type="date"
                 required
                 class="form-input"
               />
             </div>
-            
+
             <div class="form-actions">
-              <button type="submit" class="submit-btn">
-                Забронювати
-              </button>
+              <button type="submit" class="submit-btn">Забронювати</button>
             </div>
           </form>
         </div>
@@ -207,9 +215,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { DAYS_OF_WEEK, PARA_TIMES } from '../../constants/schedule';
-import type { ScheduleItem } from '../../types/schedule';
+import { computed, ref } from "vue";
+import { DAYS_OF_WEEK, PARA_TIMES } from "../../constants/schedule";
+import type { ScheduleItem } from "../../types/schedule";
 
 const props = defineProps<{
   scheduleData: ScheduleItem[];
@@ -225,9 +233,9 @@ const showModal = ref(false);
 const selectedItem = ref<ScheduleItem | null>(null);
 const showBookingModal = ref(false);
 const bookingForm = ref({
-  purpose: '',
-  teacher: '',
-  date: ''
+  purpose: "",
+  teacher: "",
+  date: "",
 });
 
 // Computed property to determine if details button should be shown
@@ -238,13 +246,13 @@ const shouldShowDetailsButton = computed(() => {
 // Calculated property for grouped schedule data
 const groupedScheduleData = computed(() => {
   const groups: { [key: string]: ScheduleItem } = {};
-  props.scheduleData.forEach(item => {
+  props.scheduleData.forEach((item) => {
     const key = `${item.day_of_week}-${item.namb_of_para}-${item.name_of_para}-${item.room}-${item.teacher}-${item.number_of_subgroup}-${item.nominator}`;
     if (!groups[key]) {
       groups[key] = {
         ...item,
         key,
-        groups: [item.name_group]
+        groups: [item.name_group],
       };
     } else {
       groups[key].groups.push(item.name_group);
@@ -256,19 +264,24 @@ const groupedScheduleData = computed(() => {
 // Check if there is data for the day
 const hasDayInSchedule = (day: string) => {
   if (props.showFreeScheduleGrid) return DAYS_OF_WEEK.includes(day);
-  return groupedScheduleData.value.some(item => item.day_of_week === day);
+  return groupedScheduleData.value.some((item) => item.day_of_week === day);
 };
 
 // Filter schedule for the day
-const filterByDay = (day: string) => groupedScheduleData.value.filter(item => item.day_of_week === day);
+const filterByDay = (day: string) =>
+  groupedScheduleData.value.filter((item) => item.day_of_week === day);
 
 // Get the time of the para
-const getParaTime = (paraNumber: number) => PARA_TIMES[paraNumber] || 'Невідомо';
+const getParaTime = (paraNumber: number) =>
+  PARA_TIMES[paraNumber] || "Невідомо";
 
 // Check if the para is free
 const isParaFree = (day: string, paraNumber: number) => {
-  const busyItems = props.scheduleData.filter(item => 
-    item.day_of_week === day && item.namb_of_para === paraNumber && item.busy === true
+  const busyItems = props.scheduleData.filter(
+    (item) =>
+      item.day_of_week === day &&
+      item.namb_of_para === paraNumber &&
+      item.busy === true,
   );
   return busyItems.length === 0;
 };
@@ -285,15 +298,15 @@ const showFreeParaDetails = (day: string, paraNumber: number) => {
     day_of_week: day,
     namb_of_para: paraNumber,
     time_of_para: getParaTime(paraNumber),
-    name_of_para: 'Вільно',
-    name_group: '',
-    room: '',
-    teacher: '',
+    name_of_para: "Вільно",
+    name_group: "",
+    room: "",
+    teacher: "",
     number_of_subgroup: 0,
-    nominator: '',
+    nominator: "",
     busy: false,
     key: `${day}-${paraNumber}-free`,
-    groups: []
+    groups: [],
   };
   showModal.value = true;
 };
@@ -316,15 +329,15 @@ const showBookingFormForFreePara = (day: string, paraNumber: number) => {
     day_of_week: day,
     namb_of_para: paraNumber,
     time_of_para: getParaTime(paraNumber),
-    name_of_para: 'Вільно',
-    name_group: '',
-    room: '',
-    teacher: '',
+    name_of_para: "Вільно",
+    name_group: "",
+    room: "",
+    teacher: "",
     number_of_subgroup: 0,
-    nominator: '',
+    nominator: "",
     busy: false,
     key: `${day}-${paraNumber}-free`,
-    groups: []
+    groups: [],
   };
   showBookingModal.value = true;
 };
@@ -334,16 +347,16 @@ const closeBookingModal = () => {
   showBookingModal.value = false;
   selectedItem.value = null;
   bookingForm.value = {
-    purpose: '',
-    teacher: '',
-    date: ''
+    purpose: "",
+    teacher: "",
+    date: "",
   };
 };
 
 // Submit booking form
 const submitBooking = () => {
   // Implementation of submitting the booking form
-  console.log('Booking submitted:', bookingForm.value);
+  console.log("Booking submitted:", bookingForm.value);
   closeBookingModal();
 };
 </script>
@@ -378,8 +391,10 @@ const submitBooking = () => {
   border-radius: 6px;
   padding: 15px;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -388,7 +403,7 @@ const submitBooking = () => {
 
 .schedule-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .schedule-item.busy {
@@ -442,7 +457,9 @@ const submitBooking = () => {
   margin: 5px 0;
 }
 
-.item-location, .item-teacher, .item-nominator {
+.item-location,
+.item-teacher,
+.item-nominator {
   font-size: 14px;
   color: #7f8c8d;
 }
@@ -469,7 +486,7 @@ const submitBooking = () => {
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .details-btn:hover {
@@ -477,7 +494,7 @@ const submitBooking = () => {
   border-color: #b71c1c;
   color: #b71c1c;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .details-btn:focus {
@@ -501,7 +518,7 @@ const submitBooking = () => {
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .booking-btn:hover {
@@ -509,7 +526,7 @@ const submitBooking = () => {
   border-color: #b71c1c;
   color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .booking-btn:focus {
@@ -533,7 +550,7 @@ const submitBooking = () => {
   font-size: 12px;
   font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   margin-right: 4px;
 }
 
@@ -542,7 +559,7 @@ const submitBooking = () => {
   border-color: #b71c1c;
   color: #b71c1c;
   transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .details-btn-small:focus {
@@ -566,7 +583,7 @@ const submitBooking = () => {
   font-size: 12px;
   font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .booking-btn-small:hover {
@@ -574,7 +591,7 @@ const submitBooking = () => {
   border-color: #b71c1c;
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .booking-btn-small:focus {
@@ -666,7 +683,9 @@ const submitBooking = () => {
   width: 95%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18), 0 2px 8px rgba(44, 62, 80, 0.10);
+  box-shadow:
+    0 8px 32px rgba(44, 62, 80, 0.18),
+    0 2px 8px rgba(44, 62, 80, 0.1);
   border: 1.5px solid #e0e0e0;
   padding: 0;
 }
@@ -709,7 +728,7 @@ const submitBooking = () => {
   opacity: 1;
   color: #e74c3c;
   transform: translateY(-2px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .modal-body {
@@ -825,7 +844,7 @@ const submitBooking = () => {
   border-color: #b71c1c;
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .submit-btn:focus {
@@ -850,87 +869,88 @@ const submitBooking = () => {
   .schedule-container {
     padding: 10px;
   }
-  
+
   .schedule {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 10px;
   }
-  
+
   .schedule-item {
     padding: 12px;
     min-height: 260px;
   }
-  
+
   .item-group {
     font-size: 14px;
   }
-  
+
   .item-subject {
     font-size: 14px;
   }
-  
+
   .details-btn {
     padding: 6px 12px;
     font-size: 13px;
   }
-  
+
   .booking-btn {
     padding: 6px 12px;
     font-size: 13px;
   }
-  
+
   .free-schedule-grid {
     grid-template-columns: 60px 120px 1fr 80px;
     font-size: 0.9rem;
   }
-  
+
   .grid-cell {
     padding: 8px 6px;
   }
-  
-  .details-btn-small, .booking-btn-small {
+
+  .details-btn-small,
+  .booking-btn-small {
     font-size: 11px;
     padding: 3px 6px;
   }
-  
+
   .modal-content {
     width: 98%;
     max-width: 400px;
   }
-  
+
   .modal-header {
     padding: 20px 20px 12px 20px;
   }
-  
+
   .modal-header h3 {
     font-size: 1.2rem;
   }
-  
+
   .modal-body {
     padding: 20px 20px 16px 20px;
   }
-  
+
   .detail-row {
     font-size: 0.95rem;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .detail-row strong {
     min-width: auto;
   }
-  
+
   .form-input {
     padding: 10px 14px;
     font-size: 0.95rem;
   }
-  
+
   .form-actions {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .submit-btn {
     padding: 8px 16px;
     font-size: 13px;
@@ -942,89 +962,90 @@ const submitBooking = () => {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  
+
   .schedule-item {
     padding: 10px;
     min-height: 240px;
   }
-  
+
   .day-title {
     padding: 8px 12px;
     font-size: 1rem;
   }
-  
+
   .item-group {
     font-size: 13px;
   }
-  
+
   .item-subject {
     font-size: 13px;
   }
-  
+
   .para-time {
     font-size: 12px;
   }
-  
+
   .details-btn {
     padding: 5px 10px;
     font-size: 12px;
     width: 100%;
   }
-  
+
   .booking-btn {
     padding: 5px 10px;
     font-size: 12px;
     width: 100%;
   }
-  
+
   .free-schedule-grid {
     grid-template-columns: 50px 100px 1fr 70px;
     font-size: 0.8rem;
   }
-  
+
   .grid-cell {
     padding: 6px 4px;
   }
-  
-  .details-btn-small, .booking-btn-small {
+
+  .details-btn-small,
+  .booking-btn-small {
     font-size: 10px;
     padding: 2px 4px;
     margin-right: 2px;
   }
-  
+
   .modal-content {
     width: 99%;
     max-width: 350px;
   }
-  
+
   .modal-header {
     padding: 16px 16px 10px 16px;
   }
-  
+
   .modal-header h3 {
     font-size: 1.1rem;
   }
-  
+
   .modal-body {
     padding: 16px 16px 12px 16px;
   }
-  
+
   .detail-row {
     font-size: 0.9rem;
   }
-  
+
   .form-input {
     padding: 8px 12px;
     font-size: 0.9rem;
   }
-  
+
   .form-actions {
     gap: 6px;
   }
-  
+
   .submit-btn {
     padding: 6px 12px;
     font-size: 12px;
   }
 }
-</style> 
+</style>

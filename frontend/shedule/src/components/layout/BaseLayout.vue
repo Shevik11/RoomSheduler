@@ -12,8 +12,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 .layout {
@@ -44,11 +43,11 @@
   .layout__header {
     padding: 0.75rem;
   }
-  
+
   .layout__main {
     padding: 0.75rem;
   }
-  
+
   .layout__footer {
     padding: 0.75rem;
   }
@@ -58,13 +57,13 @@
   .layout__header {
     padding: 0.5rem;
   }
-  
+
   .layout__main {
     padding: 0.5rem;
   }
-  
+
   .layout__footer {
     padding: 0.5rem;
   }
 }
-</style> 
+</style>

@@ -19,10 +19,14 @@ class Cache {
     return Cache.instance;
   }
 
-  set<T>(key: string, data: T, expiration: number = this.defaultExpiration): void {
+  set<T>(
+    key: string,
+    data: T,
+    expiration: number = this.defaultExpiration,
+  ): void {
     this.cache.set(key, {
       data,
-      timestamp: Date.now() + expiration
+      timestamp: Date.now() + expiration,
     });
   }
 
@@ -47,4 +51,4 @@ class Cache {
   }
 }
 
-export default Cache.getInstance(); 
+export default Cache.getInstance();

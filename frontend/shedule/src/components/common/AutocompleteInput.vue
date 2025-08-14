@@ -1,9 +1,9 @@
 <template>
   <div class="autocomplete-container">
-    <input 
+    <input
       :id="id"
-      v-model="inputValue" 
-      @input="handleInput" 
+      v-model="inputValue"
+      @input="handleInput"
       :placeholder="placeholder"
       class="filter-input"
       @focus="showSuggestions = true"
@@ -19,8 +19,8 @@
         <div v-if="suggestions.length === 0" class="suggestion-item no-results">
           {{ noResultsText }}
         </div>
-        <div 
-          v-for="item in suggestions" 
+        <div
+          v-for="item in suggestions"
           :key="item"
           class="suggestion-item"
           @mousedown.prevent="selectItem(item)"
@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed } from "vue";
 
 const props = defineProps<{
   id: string;
@@ -46,23 +46,26 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-  (e: 'select', value: string): void;
-  (e: 'input', value: string): void;
+  (e: "update:modelValue", value: string): void;
+  (e: "select", value: string): void;
+  (e: "input", value: string): void;
 }>();
 
 const inputValue = ref(props.modelValue);
 const showSuggestions = ref(false);
 
-watch(() => props.modelValue, (newValue) => {
-  inputValue.value = newValue;
-});
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    inputValue.value = newValue;
+  },
+);
 
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLInputElement).value;
   inputValue.value = value;
-  emit('update:modelValue', value);
-  emit('input', value);
+  emit("update:modelValue", value);
+  emit("input", value);
   showSuggestions.value = true;
 };
 
@@ -72,19 +75,25 @@ const handleBlur = () => {
   }, 300);
 };
 
-watch(() => props.suggestions, (newSuggestions) => {
-
-  if (newSuggestions.length > 0 && inputValue.value && document.activeElement?.id === props.id) {
-    showSuggestions.value = true;
-  } else if (newSuggestions.length === 0) {
-    showSuggestions.value = false;
-  }
-});
+watch(
+  () => props.suggestions,
+  (newSuggestions) => {
+    if (
+      newSuggestions.length > 0 &&
+      inputValue.value &&
+      document.activeElement?.id === props.id
+    ) {
+      showSuggestions.value = true;
+    } else if (newSuggestions.length === 0) {
+      showSuggestions.value = false;
+    }
+  },
+);
 
 const selectItem = (item: string) => {
   inputValue.value = item;
-  emit('update:modelValue', item);
-  emit('select', item);
+  emit("update:modelValue", item);
+  emit("select", item);
   showSuggestions.value = false;
 };
 
@@ -107,7 +116,7 @@ const hasValue = computed(() => !!inputValue.value);
   font-size: 14px;
   color: #2c3e50;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
   height: 35px;
 }
@@ -132,7 +141,7 @@ const hasValue = computed(() => !!inputValue.value);
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .suggestion-item {
@@ -159,12 +168,12 @@ const hasValue = computed(() => !!inputValue.value);
     font-size: 13px;
     height: 32px;
   }
-  
+
   .suggestion-item {
     padding: 6px 10px;
     font-size: 13px;
   }
-  
+
   .suggestions-list {
     max-height: 180px;
   }
@@ -176,14 +185,14 @@ const hasValue = computed(() => !!inputValue.value);
     font-size: 12px;
     height: 30px;
   }
-  
+
   .suggestion-item {
     padding: 5px 8px;
     font-size: 12px;
   }
-  
+
   .suggestions-list {
     max-height: 160px;
   }
 }
-</style> 
+</style>

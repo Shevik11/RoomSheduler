@@ -1,9 +1,9 @@
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import Components from 'unplugin-vue-components/vite'
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import Components from "unplugin-vue-components/vite";
 // import VueDevTools from 'vite-plugin-vue-devtools'
-import path from 'path'
+import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,16 +11,16 @@ export default defineConfig({
     vue(),
     Components({
       dts: true,
-      dirs: ['src/components']
+      dirs: ["src/components"],
     }),
     // VueDevTools(),
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
   build: {
-    target: 'esnext'
-  }
-})
+    target: "esnext",
+  },
+});

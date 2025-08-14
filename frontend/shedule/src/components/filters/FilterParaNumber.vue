@@ -1,10 +1,10 @@
 <template>
   <div class="filter-item select-wrapper">
     <label for="namb_of_para">Номер пари:</label>
-    <select 
+    <select
       id="namb_of_para"
       :value="modelValue"
-      @input="handleInput" 
+      @input="handleInput"
       class="filter-select"
     >
       <option value="">Всі пари</option>
@@ -19,17 +19,17 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: number | null): void;
+  (e: "update:modelValue", value: number | null): void;
 }>();
 
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  emit('update:modelValue', value === 'null' ? null : Number(value));
+  emit("update:modelValue", value === "null" ? null : Number(value));
 };
 </script>
 
 <style scoped>
-@import './dropdown-filter.css';
+@import "./dropdown-filter.css";
 .filter-item {
   display: flex;
   flex-direction: column;
@@ -49,4 +49,4 @@ const handleInput = (event: Event) => {
 .filter-select {
   color: #2c3e50 !important;
 }
-</style> 
+</style>

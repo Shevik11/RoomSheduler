@@ -1,4 +1,4 @@
-const STORAGE_PREFIX = 'schedule_';
+const STORAGE_PREFIX = "schedule_";
 
 export const storage = {
   set<T>(key: string, value: T): void {
@@ -6,7 +6,7 @@ export const storage = {
       const serializedValue = JSON.stringify(value);
       localStorage.setItem(`${STORAGE_PREFIX}${key}`, serializedValue);
     } catch (error) {
-      console.error('Error saving to localStorage:', error);
+      console.error("Error saving to localStorage:", error);
     }
   },
 
@@ -15,7 +15,7 @@ export const storage = {
       const serializedValue = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
       return serializedValue ? JSON.parse(serializedValue) : null;
     } catch (error) {
-      console.error('Error reading from localStorage:', error);
+      console.error("Error reading from localStorage:", error);
       return null;
     }
   },
@@ -24,17 +24,17 @@ export const storage = {
     try {
       localStorage.removeItem(`${STORAGE_PREFIX}${key}`);
     } catch (error) {
-      console.error('Error removing from localStorage:', error);
+      console.error("Error removing from localStorage:", error);
     }
   },
 
   clear(): void {
     try {
       Object.keys(localStorage)
-        .filter(key => key.startsWith(STORAGE_PREFIX))
-        .forEach(key => localStorage.removeItem(key));
+        .filter((key) => key.startsWith(STORAGE_PREFIX))
+        .forEach((key) => localStorage.removeItem(key));
     } catch (error) {
-      console.error('Error clearing localStorage:', error);
+      console.error("Error clearing localStorage:", error);
     }
-  }
-}; 
+  },
+};

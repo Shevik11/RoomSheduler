@@ -15,11 +15,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { Ref } from 'vue';
-import AutocompleteInput from '../common/AutocompleteInput.vue';
-import scheduleService from '../../services/scheduleService';
-import type { ScheduleFilters } from '../../types/schedule';
+import { ref, watch } from "vue";
+import type { Ref } from "vue";
+import AutocompleteInput from "../common/AutocompleteInput.vue";
+import scheduleService from "../../services/scheduleService";
+import type { ScheduleFilters } from "../../types/schedule";
 
 const props = defineProps<{
   modelValue: string | null;
@@ -27,16 +27,19 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | null): void;
+  (e: "update:modelValue", value: string | null): void;
 }>();
 
-const subjectValue: Ref<string> = ref(props.modelValue || '');
+const subjectValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);
 const isLoading: Ref<boolean> = ref(false);
 
-watch(() => props.modelValue, (newValue: string | null) => {
-  subjectValue.value = newValue || '';
-});
+watch(
+  () => props.modelValue,
+  (newValue: string | null) => {
+    subjectValue.value = newValue || "";
+  },
+);
 
 const handleInput = async (value: string) => {
   if (!value) {
@@ -46,9 +49,12 @@ const handleInput = async (value: string) => {
 
   isLoading.value = true;
   try {
-    suggestions.value = await scheduleService.getSubjectSuggestions(value, props.filters);
+    suggestions.value = await scheduleService.getSubjectSuggestions(
+      value,
+      props.filters,
+    );
   } catch (error) {
-    console.error('Error fetching subject suggestions:', error);
+    console.error("Error fetching subject suggestions:", error);
     suggestions.value = [];
   } finally {
     isLoading.value = false;
@@ -56,7 +62,7 @@ const handleInput = async (value: string) => {
 };
 
 const handleSelect = (value: string) => {
-  emit('update:modelValue', value);
+  emit("update:modelValue", value);
 };
 </script>
 
@@ -84,7 +90,7 @@ const handleSelect = (value: string) => {
   font-size: 14px;
   color: #2c3e50 !important;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .filter-select:focus {
@@ -95,4 +101,4 @@ const handleSelect = (value: string) => {
 .filter-select {
   color: #2c3e50 !important;
 }
-</style> 
+</style>

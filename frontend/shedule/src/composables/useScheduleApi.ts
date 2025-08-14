@@ -1,7 +1,11 @@
-import { ref } from 'vue';
-import scheduleService from '../services/scheduleService';
-import type { ScheduleFilters, ScheduleItem, RoomSchedule } from '../types/schedule';
-import type { AxiosError } from 'axios';
+import { ref } from "vue";
+import scheduleService from "../services/scheduleService";
+import type {
+  ScheduleFilters,
+  ScheduleItem,
+  RoomSchedule,
+} from "../types/schedule";
+import type { AxiosError } from "axios";
 
 interface ApiError extends Error {
   response?: {
@@ -16,23 +20,23 @@ export function useScheduleApi() {
   const error = ref<string | null>(null);
 
   const handleError = (err: unknown): string => {
-    console.error('API Error:', err);
+    console.error("API Error:", err);
     if (err instanceof Error) {
       const apiError = err as ApiError;
       const errorMessage = apiError.response?.data?.detail || apiError.message;
-      console.error('Error details:', errorMessage);
+      console.error("Error details:", errorMessage);
       return `Помилка: ${errorMessage}`;
     }
-    return 'Помилка: Невідома помилка';
+    return "Помилка: Невідома помилка";
   };
 
   const fetchSchedule = async (filters: ScheduleFilters) => {
     try {
       loading.value = true;
       error.value = null;
-      console.log('Fetching schedule with filters:', filters);
+      console.log("Fetching schedule with filters:", filters);
       const result = await scheduleService.fetchSchedule(filters);
-      console.log('Schedule result:', result);
+      console.log("Schedule result:", result);
       return result;
     } catch (err) {
       error.value = handleError(err);
@@ -46,9 +50,9 @@ export function useScheduleApi() {
     try {
       loading.value = true;
       error.value = null;
-      console.log('Fetching room schedule for:', room);
+      console.log("Fetching room schedule for:", room);
       const result = await scheduleService.fetchRoomSchedule(room);
-      console.log('Room schedule result:', result);
+      console.log("Room schedule result:", result);
       return result;
     } catch (err) {
       error.value = handleError(err);
@@ -62,9 +66,9 @@ export function useScheduleApi() {
     try {
       loading.value = true;
       error.value = null;
-      console.log('Fetching free slots for group:', group);
+      console.log("Fetching free slots for group:", group);
       const result = await scheduleService.fetchFreeSlots(group);
-      console.log('Free slots result:', result);
+      console.log("Free slots result:", result);
       return result;
     } catch (err) {
       error.value = handleError(err);
@@ -79,6 +83,6 @@ export function useScheduleApi() {
     error,
     fetchSchedule,
     fetchRoomSchedule,
-    fetchFreeSlots
+    fetchFreeSlots,
   };
-} 
+}
