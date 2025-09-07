@@ -1,0 +1,52 @@
+name: schedule-aci
+
+on:
+  schedule:
+    - cron: "0 20 * * *"   # 23:00 Kyiv ≈ 20:00 UTC → STOP
+    - cron: "30 4 * * *"   # 07:30 Kyiv ≈ 04:30 UTC → START
+  workflow_dispatch:
+
+jobs:
+  stop_all:
+    if: github.event.schedule == '0 20 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Stop containers and DB
+        run: |
+          az container stop -g myResourceGroup -n frontend-container || true
+          az container stop -g myResourceGroup -n backend-container  || true
+          az container stop -g myResourceGroup -n redis-container    || true
+          az postgres flexible-server stop -g myResourceGroup -n roomscheduler-db || true
+
+  start_all:
+    if: github.event.schedule == '30 4 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Start DB
+        run: |
+          az postgres flexible-server start -g myResourceGroup -n roomscheduler-db || true
+          # Wait until Ready (max ~5 min)
+          for i in {1..30}; do
+            state=$(az postgres flexible-server show -g myResourceGroup -n roomscheduler-db --query state -o tsv || echo unknown)
+            echo "DB state: $state"
+            [ "$state" = "Ready" ] && break
+            sleep 10
+          done
+
+      - name: Start containers
+        run: |
+          az container start -g myResourceGroup -n redis-container    || true
+          az container start -g myResourceGroup -n backend-container  || true
+          az container start -g myResourceGroup -n frontend-container || true
+
+
