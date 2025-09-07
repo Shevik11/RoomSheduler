@@ -20,13 +20,16 @@ import type { Ref } from "vue";
 import AutocompleteInput from "../common/AutocompleteInput.vue";
 import scheduleService from "../../services/scheduleService";
 import type { ScheduleFilters } from "../../types/schedule";
+import { debounce } from "../../utils/debounce";
 
 const props = defineProps<{
   modelValue: string | null;
   filters: ScheduleFilters;
 }>();
 
-const emit = defineEmits<(e: "update:modelValue", value: string | null) => void>();
+const emit = defineEmits<{
+  "update:modelValue": [value: string | null];
+}>();
 
 const subjectValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);
@@ -39,8 +42,8 @@ watch(
   },
 );
 
-const handleInput = async (value: string) => {
-  if (!value) {
+const debouncedSearch = debounce(async (query: string) => {
+  if (!query) {
     suggestions.value = [];
     return;
   }
@@ -48,7 +51,7 @@ const handleInput = async (value: string) => {
   isLoading.value = true;
   try {
     suggestions.value = await scheduleService.getSubjectSuggestions(
-      value,
+      query,
       props.filters,
     );
   } catch (error) {
@@ -57,6 +60,11 @@ const handleInput = async (value: string) => {
   } finally {
     isLoading.value = false;
   }
+}, 150); 
+
+const handleInput = (value: string) => {
+  emit("update:modelValue", value);
+  debouncedSearch(value);
 };
 
 const handleSelect = (value: string) => {

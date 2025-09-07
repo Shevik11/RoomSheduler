@@ -6,7 +6,7 @@ Base = declarative_base()
 
 
 class Days(Base):
-    __tablename__ = "days_3"
+    __tablename__ = "days"
 
     name_group = Column(String)
     number_of_subgroup = Column(Integer)

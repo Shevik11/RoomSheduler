@@ -7,7 +7,13 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = f"postgresql://{os.getenv('NAME')}:{os.getenv('PASSWORD')}@{os.getenv('HOST')}/{os.getenv('DB_NAME')}"
+# Try to get DATABASE_URL first (for Docker), fallback to individual variables
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    SQLALCHEMY_DATABASE_URL = DATABASE_URL
+else:
+    # Fallback for local development
+    SQLALCHEMY_DATABASE_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'roomscheduler')}"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 

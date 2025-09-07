@@ -21,6 +21,7 @@ import type { Ref } from "vue";
 import AutocompleteInput from "../common/AutocompleteInput.vue";
 import scheduleService from "../../services/scheduleService";
 import type { ScheduleFilters } from "../../types/schedule";
+import { debounce } from "../../utils/debounce";
 
 const props = defineProps<{
   modelValue: string | null;
@@ -43,25 +44,22 @@ watch(
   },
 );
 
-const handleInput = async (value: string) => {
-  if (!value) {
+const debouncedSearch = debounce(async (query: string) => {
+  if (!query) {
     suggestions.value = [];
     emit("update:modelValue", null);
     return;
   }
 
-  // Не шукаємо підказки відразу після вибору елемента
   if (justSelected.value) {
     justSelected.value = false;
     return;
   }
 
-  emit("update:modelValue", value);
-
   isLoading.value = true;
   try {
     suggestions.value = await scheduleService.getTeacherSuggestions(
-      value,
+      query,
       props.filters,
     );
   } catch (error) {
@@ -70,6 +68,11 @@ const handleInput = async (value: string) => {
   } finally {
     isLoading.value = false;
   }
+}, 150); 
+
+const handleInput = (value: string) => {
+  emit("update:modelValue", value);
+  debouncedSearch(value);
 };
 
 const handleSelect = (value: string) => {

@@ -15,7 +15,6 @@ router = APIRouter(prefix="/lessons", tags=["lessons"])
 
 
 def generate_lessons_cache_key(**kwargs):
-    # generate cache key
     params_str = "&".join(
         [f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None]
     )
@@ -36,7 +35,6 @@ async def get_lesson_suggestions(
     db: Session = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis),
 ):
-    # generate cache key
     cache_key = generate_lessons_cache_key(
         query=query,
         name_group=name_group,
@@ -49,7 +47,7 @@ async def get_lesson_suggestions(
         busy=busy,
     )
 
-    # try to get data from cache
+
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -82,7 +80,7 @@ async def get_lesson_suggestions(
 
     lessons = [lesson[0] for lesson in db_query.all() if lesson[0]]
 
-    # save to cache
+
     await redis_client.setex(cache_key, 600, json.dumps(lessons))
 
     return lessons
@@ -94,7 +92,7 @@ async def get_all_subjects(
 ):
     cache_key = "lessons_all_subjects"
 
-    # try to get data from cache
+
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -104,7 +102,7 @@ async def get_all_subjects(
     )
     result = [subject[0] for subject in subjects]
 
-    # save to cache
+
     await redis_client.setex(cache_key, 1800, json.dumps(result))
 
     return result
@@ -112,7 +110,7 @@ async def get_all_subjects(
 
 @router.delete("/cache/clear")
 async def clear_lessons_cache(redis_client: redis.Redis = Depends(get_redis)):
-    # clear cache for lessons
+
     keys = await redis_client.keys("lessons_suggestions:*")
     all_subjects_key = await redis_client.keys("lessons_all_subjects")
     keys.extend(all_subjects_key)

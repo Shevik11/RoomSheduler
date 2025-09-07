@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+README.md
+LICENSE
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Environment
+.env
+.env.*
+env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime
+*.pid
+*.seed
+
+# Azure
+azure-setup.sh
+sonar-project.properties
+
+# Documentation
+docs/
+*.md
+
+# Scripts
+scripts/
+Makefile

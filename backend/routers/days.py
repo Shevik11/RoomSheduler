@@ -15,8 +15,6 @@ router = APIRouter()
 
 
 def generate_cache_key(**kwargs):
-    # generate cache key
-    # create string with parameters for hashing
     params_str = "&".join(
         [f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None]
     )
@@ -38,7 +36,7 @@ async def get_days(
     db: Session = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis),
 ):
-    # generate cache key
+
     cache_key = generate_cache_key(
         name_group=name_group,
         number_of_subgroup=number_of_subgroup,
@@ -64,7 +62,7 @@ async def get_days(
         number_of_subgroup=number_of_subgroup,
         day_of_week=day_of_week,
         nominator=nominator,
-        time_of_para=time_of_para,
+        time_of_para=time_of_para,  
         namb_of_para=namb_of_para,
         name_of_para=name_of_para,
         room=room,

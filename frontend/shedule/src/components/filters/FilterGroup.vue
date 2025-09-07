@@ -25,7 +25,9 @@ const props = defineProps<{
   modelValue: string;
 }>();
 
-const emit = defineEmits<(e: "update:modelValue", value: string) => void>();
+const emit = defineEmits<{
+  "update:modelValue": [value: string];
+}>();
 
 const groupValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);
@@ -56,7 +58,7 @@ const debouncedSearch = debounce(async (query: string) => {
   } finally {
     isFetching.value = false;
   }
-}, 300); // 300ms затримка
+}, 150); 
 
 const handleInput = (value: string) => {
   emit("update:modelValue", value);

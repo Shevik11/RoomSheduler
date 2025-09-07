@@ -15,19 +15,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from "vue";
+import { ref, watch } from "vue";
 import type { Ref } from "vue";
 import AutocompleteInput from "../common/AutocompleteInput.vue";
 import scheduleService from "../../services/scheduleService";
 import type { ScheduleFilters } from "../../types/schedule";
+import { debounce } from "../../utils/debounce";
 
 const props = defineProps<{
   modelValue: string | null;
   filters: ScheduleFilters;
 }>();
 
-const emit =
-  defineEmits<(e: "update:modelValue", value: string | null) => void>();
+const emit = defineEmits<{
+  "update:modelValue": [value: string | null];
+}>();
 
 const roomValue: Ref<string> = ref(props.modelValue || "");
 const suggestions: Ref<string[]> = ref([]);
@@ -45,8 +47,9 @@ watch(
   },
 );
 
-const handleInput = async (value: string) => {
-  if (!value) {
+
+const debouncedSearch = debounce(async (query: string) => {
+  if (!query) {
     suggestions.value = [];
     emit("update:modelValue", null);
     return;
@@ -62,7 +65,7 @@ const handleInput = async (value: string) => {
     suggestions.value = [];
     console.log("Fetching room suggestions with filters:", props.filters);
     const newSuggestions = await scheduleService.getRoomSuggestions(
-      value,
+      query,
       props.filters,
     );
     console.log("Got room suggestions:", newSuggestions);
@@ -73,20 +76,13 @@ const handleInput = async (value: string) => {
   } finally {
     isLoading.value = false;
   }
+}, 150); 
+
+const handleInput = (value: string) => {
+  emit("update:modelValue", value);
+  debouncedSearch(value);
 };
 
-watch(
-  () => props.filters,
-  (newFilters) => {
-    console.log("Filters changed:", newFilters);
-    if (roomValue.value && roomValue.value.trim()) {
-      nextTick(() => {
-        handleInput(roomValue.value);
-      });
-    }
-  },
-  { deep: true, flush: "post" },
-);
 
 const handleSelect = (value: string) => {
   console.log("Selected room:", value);

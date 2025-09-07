@@ -9,13 +9,18 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8080",
+        "http://localhost:3000", 
+        "http://localhost:5173",
+        "*"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# Підключення роутера
+# Include routers
 app.include_router(days.router)
 app.include_router(rooms.router)
 app.include_router(lessons.router)
@@ -26,14 +31,14 @@ app.include_router(week_type.router)
 
 @app.get("/health/redis")
 async def redis_health_check():
-    """Перевірка стану Redis підключення"""
+    # Check Redis connection status
     is_healthy = await health_check()
     return {"redis": "healthy" if is_healthy else "unhealthy"}
 
 
 @app.get("/test-redis")
 async def test_redis(redis_client: redis.Redis = Depends(get_redis_dependency)):
-    """Тестовий endpoint для перевірки роботи Redis"""
+    # Test endpoint for Redis functionality
     await redis_client.set("test_key", "test_value")
     value = await redis_client.get("test_key")
     return {"message": "Redis is working!", "test_value": value}
@@ -41,8 +46,8 @@ async def test_redis(redis_client: redis.Redis = Depends(get_redis_dependency)):
 
 @app.delete("/cache/clear-all")
 async def clear_all_caches(redis_client: redis.Redis = Depends(get_redis_dependency)):
-    """Очищення всього кешу"""
-    # Патерни ключів для всіх роутерів
+    # Clear all cache
+    # Key patterns for all routers
     cache_patterns = [
         "days_cache:*",
         "lessons_suggestions:*",

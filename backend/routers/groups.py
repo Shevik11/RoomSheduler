@@ -18,7 +18,6 @@ router = APIRouter(prefix="/groups", tags=["groups"])
 
 
 def generate_groups_cache_key(**kwargs):
-    # generate cache key
     params_str = "&".join(
         [f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None]
     )
@@ -38,7 +37,6 @@ async def get_group_suggestions(
     busy: bool | None = None,
     db: Session = Depends(get_db),
 ):
-    # generate cache key
     cache_key = generate_groups_cache_key(
         query=query,
         number_of_subgroup=number_of_subgroup,
@@ -51,7 +49,6 @@ async def get_group_suggestions(
         busy=busy,
     )
 
-    # try to get data from cache
     try:
 
         async def get_cached_data(redis_client):
@@ -64,7 +61,6 @@ async def get_group_suggestions(
     except Exception as e:
         logger.warning(f"Failed to retrieve from cache, falling back to database: {e}")
 
-    # execute query to database
     logger.info("Fetching groups data from database")
     db_query = db.query(Days.name_group).distinct()
 
@@ -94,7 +90,6 @@ async def get_group_suggestions(
 
     groups = [group[0] for group in db_query.all() if group[0]]
 
-    # try to save to cache
     try:
 
         async def cache_data(redis_client):
@@ -115,7 +110,6 @@ async def get_all_groups(
 ):
     cache_key = "groups_all_groups"
 
-    # try to get data from cache
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         return json.loads(cached_data)
@@ -123,7 +117,6 @@ async def get_all_groups(
     groups = db.query(distinct(Days.name_group)).filter(Days.name_group != "").all()
     result = [group[0] for group in groups]
 
-    # save to cache
     await redis_client.setex(cache_key, 1800, json.dumps(result))
 
     return result
@@ -177,7 +170,6 @@ async def get_group_free_slots(
 
 @router.delete("/cache/clear")
 async def clear_groups_cache(redis_client: redis.Redis = Depends(get_redis)):
-    # clear cache for groups
     keys = await redis_client.keys("groups_suggestions:*")
     all_groups_key = await redis_client.keys("groups_all_groups")
     keys.extend(all_groups_key)

@@ -20,7 +20,6 @@ declare module 'vue' {
     FilterSubgroup: typeof import('./src/components/filters/FilterSubgroup.vue')['default']
     FilterSubject: typeof import('./src/components/filters/FilterSubject.vue')['default']
     FilterTeacher: typeof import('./src/components/filters/FilterTeacher.vue')['default']
-    RoomInfoModal: (typeof import("./src/components/common/RoomInfoModal.vue"))["default"]
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScheduleDisplay: typeof import('./src/components/features/ScheduleDisplay.vue')['default']

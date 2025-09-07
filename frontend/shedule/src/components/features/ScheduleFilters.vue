@@ -2,11 +2,11 @@
   <div class="filters-container">
     <h3>Розклад занять</h3>
     <div class="filters">
-      <FilterGroup v-model="filters.name_group" />
-      <FilterSubgroup v-model="filters.number_of_subgroup" />
-      <FilterDayOfWeek v-model="filters.day_of_week" />
-      <FilterNominator v-model="filters.nominator" />
-      <FilterParaNumber v-model="filters.namb_of_para" />
+      <FilterGroup v-model="filters.name_group" @update:modelValue="updateFilters" />
+      <FilterSubgroup v-model="filters.number_of_subgroup" @update:modelValue="updateFilters" />
+      <FilterDayOfWeek v-model="filters.day_of_week" @update:modelValue="updateFilters" />
+      <FilterNominator v-model="filters.nominator" @update:modelValue="updateFilters" />
+      <FilterParaNumber v-model="filters.namb_of_para" @update:modelValue="updateFilters" />
       <!-- Десктопні кнопки -->
       <div class="filter-buttons-desktop">
         <button @click="resetFilters" class="reset-button">
@@ -14,9 +14,9 @@
         </button>
         <button @click="applyFilters" class="apply-button">Застосувати</button>
       </div>
-      <FilterSubject v-model="filters.name_of_para" :filters="filters" />
-      <FilterRoom v-model="filters.room" :filters="filters" />
-      <FilterTeacher v-model="filters.teacher" :filters="filters" />
+      <FilterSubject v-model="filters.name_of_para" :filters="filters" @update:modelValue="updateFilters" />
+      <FilterRoom v-model="filters.room" :filters="filters" @update:modelValue="updateFilters" />
+      <FilterTeacher v-model="filters.teacher" :filters="filters" @update:modelValue="updateFilters" />
       <FilterBusy v-model="filters.busy" @change="handleBusyChange" />
       <!-- Мобільні кнопки -->
       <div class="filter-buttons-mobile">
@@ -84,6 +84,10 @@ const handleBusyChange = () => {
   }
 };
 
+const updateFilters = () => {
+  emit("update:modelValue", { ...filters.value });
+};
+
 const applyFilters = () => {
   // Створюємо копію фільтрів, щоб не втратити реактивність
   const updatedFilters = { ...filters.value };
@@ -98,16 +102,8 @@ const applyFilters = () => {
   filters.value = updatedFilters;
 };
 
-// Додаємо спостереження за змінами фільтрів
-watch(
-  filters,
-  (newFilters) => {
-    // Оновлюємо батьківський компонент при кожній зміні фільтрів
-    // Але тільки якщо це не зміна nominator через defaultNominator
-    emit("update:modelValue", { ...newFilters });
-  },
-  { deep: true, flush: "post" },
-); // Додаємо flush: 'post' для уникнення рекурсії
+// Видаляємо загальний watch на filters, щоб уникнути рекурсії
+// Оновлення відбувається тільки через конкретні обробники подій
 
 // При скиданні фільтрів беремо поточне значення з WeekTypeDisplay
 const resetFilters = () => {

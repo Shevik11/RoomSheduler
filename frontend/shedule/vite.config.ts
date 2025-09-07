@@ -7,12 +7,18 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          devtools: !process.env.NODE_ENV || process.env.NODE_ENV !== 'production'
+        }
+      }
+    }),
     Components({
       dts: true,
       dirs: ["src/components"],
     }),
-    // VueDevTools(),
+    // VueDevTools(), // Вимкнено для production
   ],
   resolve: {
     alias: {
@@ -21,5 +27,25 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router'],
+          ui: ['vue-multiselect']
+        }
+      }
+    }
   },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    watch: {
+      usePolling: false, 
+      ignored: /node_modules/
+    }
+  },
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'vue-multiselect']
+  }
 });

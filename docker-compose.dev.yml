@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Backend з hot reload для development
+  backend:
+    volumes:
+      # Тільки найнеобхідніші файли для hot reload
+      - ./backend/main.py:/app/main.py:ro
+      - ./backend/routers:/app/routers:ro
+      - ./backend/models:/app/models:ro
+      - ./backend/dependencies:/app/dependencies:ro
+      - ./backend/services:/app/services:ro
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      - DEBUG=true
+      - ENVIRONMENT=development
+
+  # PostgreSQL з мінімальними налаштуваннями для dev
+  postgres:
+    command: >
+      postgres 
+      -c shared_buffers=128MB
+      -c effective_cache_size=512MB
+      -c work_mem=2MB
+      -c maintenance_work_mem=32MB
+      -c max_connections=50
+      -c fsync=off
+      -c synchronous_commit=off
+      -c full_page_writes=off
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Redis з мінімальними налаштуваннями
+  redis:
+    command: >
+      redis-server 
+      --requirepass ${REDIS_PASSWORD:-redis123}
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
